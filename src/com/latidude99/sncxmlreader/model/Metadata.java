@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +13,9 @@ import java.util.List;
 					"status", "chartID", "chartNumber", "chartInternationalNumber", 
 					"chartNewEditionDate", "panels", "notices", "editionNumber", 
 					"lastNMNumber", "lastNMDate", "publicationDate"})
-public class Metadata {
-	
+public class Metadata implements Serializable{
+	private static final long serialVersionUID = 1314505904301660392L;
+
 	String datasetTitle;
 	String scale;
 	GeographicLimit geographicLimit;

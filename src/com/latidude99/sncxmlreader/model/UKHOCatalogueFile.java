@@ -1,12 +1,15 @@
 package com.latidude99.sncxmlreader.model;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "UKHOCatalogueFile") 
-public class UKHOCatalogueFile {
-	
+public class UKHOCatalogueFile implements Serializable{
+	private static final long serialVersionUID = 2961423601086814890L;
+
 	String schemaVersion;
 	BaseFileMetadata baseFileMetadata;
 	Products products;

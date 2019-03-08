@@ -1,5 +1,6 @@
 package com.latidude99.sncxmlreader.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,9 +8,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "Paper")
-public class Paper {
-	
-	
+public class Paper implements Serializable{
+	private static final long serialVersionUID = -6240733442840474528L;
+
 	List<StandardNavigationChart> charts;
 
 	public List<StandardNavigationChart> getCharts() {

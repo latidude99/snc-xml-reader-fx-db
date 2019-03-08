@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/Nitrite/nitrite-3.1.0.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/JSoup/jsoup-1.10.3.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/commons-codec-1.9.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/fluent-hc-4.5.3.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/httpclient-4.5.3.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/httpclient-cache-4.5.3.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/httpclient-win-4.5.3.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/httpcore-4.4.6.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/httpmime-4.5.3.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/jna-4.1.0.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/HttpClient/httpcomponents-client-4.5.3/lib/jna-platform-4.1.0.jar"/>
-	<classpathentry kind="lib" path="E:/__Java_data/_external_libraries/Cmmons IO/commons-io-2.6.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

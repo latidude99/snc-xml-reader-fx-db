@@ -1,13 +1,16 @@
 package com.latidude99.sncxmlreader.model;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "ResponsibleParty")
 @XmlType(propOrder={"organisationName", "contactInfo"})
-public class ResponsibleParty {
-	
+public class ResponsibleParty implements Serializable{
+	private static final long serialVersionUID = -8476002317698205847L;
+
 	String organisationName;
 	ContactInfo contactInfo;
 	

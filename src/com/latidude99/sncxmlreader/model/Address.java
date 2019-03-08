@@ -1,14 +1,17 @@
 package com.latidude99.sncxmlreader.model;
 
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "address")
 @XmlType(propOrder={"deliveryPoint", "city", "administrativeArea", "postalCode", "country", "electronicMailAddress"})
-public class Address {
-	
+public class Address implements Serializable{
+	private static final long serialVersionUID = 1706674944343606484L;
+
 	String deliveryPoint;
 	String city;
 	String administrativeArea;

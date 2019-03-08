@@ -1,13 +1,16 @@
 package com.latidude99.sncxmlreader.model;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "BaseFileMetadata")
 @XmlType(propOrder={"MD_FileIdentifier", "MD_CharacterSet", "MD_PointOfContact", "MD_DateStamp"})
-public class BaseFileMetadata {
-	
+public class BaseFileMetadata implements Serializable{
+	private static final long serialVersionUID = 9128827583565489660L;
+
 	String mD_FileIdentifier;
 	String mD_CharacterSet;
 	MD_PointOfContact mD_PointOfContact;

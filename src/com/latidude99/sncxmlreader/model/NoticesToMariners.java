@@ -1,15 +1,15 @@
 package com.latidude99.sncxmlreader.model;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name = "NoticesToMariners")
 //@XmlAccessorType(XmlAccessType.FIELD)
-public class NoticesToMariners {
-	
-//    @XmlAttribute(name = "id")
-//    private String productId;
-    
-    @XmlElement(name = "Year")
+public class NoticesToMariners implements Serializable{
+  	private static final long serialVersionUID = 1608943645224806165L;
+
+	@XmlElement(name = "Year")
     private String year;
     
     @XmlElement(name = "Week")
