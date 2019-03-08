@@ -2,6 +2,9 @@
 my files to ignore
 ##########################
 notes_ignore.txt
+user_data/
+user_data/old/
+old/
 
 ##########################
 ## Java

@@ -35,7 +35,7 @@
       	<children>
             <HBox prefHeight="30.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
                <children>
-                  <Label id="title-label" fx:id="labelTitle" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="624.0" text="Standard Navigation Charts XML Reader " textAlignment="CENTER">
+                  <Label id="title-label" fx:id="labelTitle" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="711.0" text="Standard Navigation Charts XML Reader " textAlignment="CENTER">
                      <font>
                         <Font size="18.0" />
                      </font>

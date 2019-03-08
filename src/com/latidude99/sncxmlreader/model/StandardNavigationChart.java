@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder={"shortName","metadata"}) 
 public class StandardNavigationChart implements Serializable{
 	private static final long serialVersionUID = -2504886200239974764L;
-
+	
 	String shortName;
 	Metadata metadata;
 	

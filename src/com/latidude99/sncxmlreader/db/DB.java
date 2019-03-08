@@ -7,12 +7,12 @@ public class DB {
 	
 	private DB() {};
 	
-	public static Nitrite getNitrite(String dbName) {
+	public static Nitrite getDB(String dbPath) {
 		if(db == null) {
 			db = Nitrite.builder()
-					.compressed()
-					.filePath("/" + dbName)
-					.openOrCreate();
+				    .compressed()
+				    .filePath(dbPath)
+				    .openOrCreate("user", "password");
 		}
 		return db;
 	}

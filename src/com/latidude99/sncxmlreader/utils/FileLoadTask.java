@@ -2,7 +2,6 @@ package com.latidude99.sncxmlreader.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -11,7 +10,7 @@ import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 
 import javafx.concurrent.Task;
 
-public class FileLoadTask extends Task<Void> {
+public class FileLoadTask extends Task<UKHOCatalogueFile> {
 	File file;
 	UKHOCatalogueFile ukhoCatalogueFile;
 	
@@ -22,7 +21,7 @@ public class FileLoadTask extends Task<Void> {
     }
 
     @Override
-    protected Void call() throws Exception {
+    protected UKHOCatalogueFile call() throws Exception {
 
         try {
         	File file = new File(fileName);
@@ -40,17 +39,18 @@ public class FileLoadTask extends Task<Void> {
 			e.printStackTrace();
 		}
 
-        return null;
+        return ukhoCatalogueFile;
     }
 
     @Override
     protected void failed() {
         System.out.println("Could not load the catalogue file");
+        MessageBox.show("Loading XML file unsuccessful", "Error");
     }
 
     @Override
     protected void succeeded() {
-        System.out.println("Catalogue file loaded");
+//        System.out.println("Catalogue file loaded from: " + file.getAbsolutePath());
     }
     
    
