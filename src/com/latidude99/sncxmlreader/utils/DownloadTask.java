@@ -1,6 +1,5 @@
 package com.latidude99.sncxmlreader.utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

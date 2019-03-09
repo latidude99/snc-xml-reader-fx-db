@@ -1,6 +1,5 @@
 package com.latidude99.sncxmlreader.utils;
 
-import com.latidude99.sncxmlreader.model.Address;
 import com.latidude99.sncxmlreader.model.BaseFileMetadata;
 import com.latidude99.sncxmlreader.model.ContactInfo;
 

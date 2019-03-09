@@ -34,7 +34,6 @@ public class FileLoadTask extends Task<UKHOCatalogueFile> {
 			jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 	        ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
-	        ChartUtils.setUkhoCatalogueFile(ukhoCatalogueFile);
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}

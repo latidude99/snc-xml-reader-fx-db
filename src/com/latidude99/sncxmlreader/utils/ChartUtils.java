@@ -3,16 +3,25 @@ package com.latidude99.sncxmlreader.utils;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.dizitart.no2.objects.ObjectRepository;
+import org.dizitart.no2.objects.filters.ObjectFilters;
+import org.dizitart.no2.*;
+import com.latidude99.sncxmlreader.db.DB;
 import com.latidude99.sncxmlreader.model.Metadata;
 import com.latidude99.sncxmlreader.model.NoticesToMariners;
 import com.latidude99.sncxmlreader.model.Panel;
 import com.latidude99.sncxmlreader.model.Polygon;
 import com.latidude99.sncxmlreader.model.Position;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
-import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 
 public class ChartUtils {
+	private static final String DB_PATH = "user_data/snc_catalogue.db";
+	Nitrite database;
+	ObjectRepository<StandardNavigationChart> chartRepository;
 	
+
+/*
 	private static UKHOCatalogueFile ukhoCatalogueFile;
 	
 	public static UKHOCatalogueFile getUkhoCatalogueFile() {
@@ -40,11 +49,12 @@ public class ChartUtils {
 		return charts;
 	}
 	
-		
-	public String displayChartRange(Map<String, StandardNavigationChart> charts, String input, boolean fullInfo) {
+*/		
+	public String displayChartRange(String input, boolean fullInfo) {
 		StringBuilder sb = new StringBuilder();
 		Set<String> numbersSearched = FormatUtils.parseInput(input);
-		Map<String, StandardNavigationChart> chartsFound = findCharts(charts, numbersSearched);
+		System.out.println(numbersSearched);
+		Map<String, StandardNavigationChart> chartsFound = findChartsFromRepository(numbersSearched);
         
 		sb.append(printSearchSummary(chartsFound, numbersSearched));
 		
@@ -54,25 +64,27 @@ public class ChartUtils {
         			sb.append(displayChartFullInfo(chart));
 				else
 					sb.append(displayChartBasicInfo(chart));
- //       	sb.append("\n-------------------------------------------------\n");
         	}
         } else {
 			sb.append("\nNo charts have been found"); 
-//			sb.append("\n-------------------------------------------------\n");
         }
         return sb.toString();
 	}
 	
 	
 	
-	private Map<String, StandardNavigationChart> findCharts(Map<String, StandardNavigationChart> charts, Set<String> numbersSearched){
+	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched){
+		database = DB.getDB(DB_PATH);
+		System.out.println(database.toString());
+		chartRepository = database.getRepository(StandardNavigationChart.class);		
 		Map<String, StandardNavigationChart> chartsFound = new TreeMap<>();   
-		
+				
         for(String searchNum : numbersSearched) {
-        	for(String chartNum : charts.keySet()) {
-        		if((searchNum).equals(chartNum))
-        				chartsFound.put(chartNum, charts.get(chartNum));
-        	}	
+        	StandardNavigationChart chart = null;
+        	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
+        	System.out.println("chart: " + chart);
+        	if(chart != null)
+        		chartsFound.put(searchNum, chart);	
         }
         return chartsFound;
 	}
