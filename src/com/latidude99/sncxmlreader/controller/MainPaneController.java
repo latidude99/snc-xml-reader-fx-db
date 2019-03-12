@@ -24,6 +24,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -31,6 +33,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.ResourceBundle;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.Cursor;
 import org.dizitart.no2.objects.ObjectRepository;
@@ -40,6 +47,8 @@ import com.latidude99.sncxmlreader.utils.FormatUtils;
 import com.latidude99.sncxmlreader.utils.Info;
 import com.latidude99.sncxmlreader.utils.MessageBox;
 import com.latidude99.sncxmlreader.db.DB;
+import com.latidude99.sncxmlreader.db.DBLoader;
+import com.latidude99.sncxmlreader.db.DBLoaderTask;
 import com.latidude99.sncxmlreader.model.AppDTO;
 import com.latidude99.sncxmlreader.model.BaseFileMetadata;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
@@ -51,10 +60,14 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -62,6 +75,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 
 public class MainPaneController implements Initializable{
@@ -72,6 +87,9 @@ public class MainPaneController implements Initializable{
     ObjectRepository<BaseFileMetadata> metaRepository;
     ObjectRepository<AppDTO> appDTORepository;
     Nitrite database;
+    FileLoadTask fileLoadTask;
+    DBLoader dbLoader;
+    DBLoaderTask dbLoaderTask;
 	
 	@FXML
 	InputPaneController inputPaneController;
@@ -84,7 +102,15 @@ public class MainPaneController implements Initializable{
 	@FXML
 	CataloguePaneController cataloguePaneController;
 	
- 
+	SplashPaneController splashPaneController;
+    Button buttonSplash;
+    Label labelSplash;
+    ProgressIndicator progressSplash;
+    Stage stageSplash;
+    public void setLabelSplash(Label labelSplash) {
+    	this.labelSplash = labelSplash;
+    }
+
     private File fileSave = null;
     private File fileLoad = null;
        
@@ -98,7 +124,8 @@ public class MainPaneController implements Initializable{
     ChartUtils chartUtils;
     Task<Void> loadTask;
     File fileTmp;
-        
+    
+  
     TextArea textResult;
     Button buttonClearSearch;
     Label labelTitle;
@@ -117,17 +144,34 @@ public class MainPaneController implements Initializable{
     CheckBox checkboxInfo;
     Button buttonRefresh;
     
+    
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-//		webPaneController.setMainPaneController(this);
+		
+//		MessageBox.show(splashPaneController.toString(), "");
+		
+//		System.out.println(splashPaneController);
+		
+//		configurePaneSplash();
+//		displaySplash();
 		configureControls();
 		dbInit();
-		startup();
+//		startup();
 		configureIO();
 		configureProcessing();
+		startup();
+//		test();
 	}
-	
+/*	
+	private void test() {
+		loadPaneSplash();
+	    System.out.println(splashPaneController.getLabelSplash().getText());
+	    splashPaneController.getLabelSplash().setText("label test");
+	    System.out.println(splashPaneController.getLabelSplash().getText());
+	    splashPaneController.getLabelSplash().setText("label test two");	
+	}
+*/
 	public void configureControls() {
 		textResult = contentPaneController.getTextResult();
 	    buttonClearSearch = contentPaneController.getButtonClearSearch();
@@ -143,7 +187,7 @@ public class MainPaneController implements Initializable{
 	    lineSeparator = inputPaneController.getLineSeparator();
 	    buttonCatInfo = searchPaneController.getButtonCatInfo();
 	    checkboxInfo = searchPaneController.getCheckboxInfo();
-	    buttonRefresh = cataloguePaneController.getButtonRefresh();
+	    
 	}
 	
 	public void dbInit() {
@@ -152,33 +196,25 @@ public class MainPaneController implements Initializable{
 		chartRepository = database.getRepository(StandardNavigationChart.class);
 		metaRepository = database.getRepository(BaseFileMetadata.class);
 		appDTORepository = database.getRepository(AppDTO.class);
+		System.out.println("appDTORepository.find().size(): " + appDTORepository.find().size());
 	}
 	
 	// Loading data parsed from  snc_catalogue.xml to Nitrite DB (object repository) 
 	// if there is no catalogue loaded in DB
 	public void startup() {
-		if(chartRepository.size() < 100) {
-			loadDBFromFile(FILE_PATH);
-			setInfoAfterDBLoaded();
+		if(appDTORepository.find().size() < 1 || chartRepository.size() < 100) {
+			textResult.setText("Wait for the app to finish loading chart database..............");
+			loadDBFromFile(ukhoCatalogueFile, FILE_PATH, DB_PATH);	
 		}else {
 			setInfoAfterDBLoaded();
 		}
 	}	
 	
 	public void configureIO(){
+		chartUtils = new ChartUtils();
 		fileTmp = new File("user_data/.");
 		
-		buttonRefresh.setOnAction(new EventHandler<ActionEvent>(){
-			@Override
-			public void handle(ActionEvent e){		
-				if(chartRepository.size() < 100) {
-					loadDBFromFile(FILE_PATH);
-				}else {
-					setInfoAfterDBLoaded();
-				}
-			}
-		});
-				
+						
 		buttonLoadFile.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){
@@ -186,8 +222,7 @@ public class MainPaneController implements Initializable{
 				fileLoad = fileChooser.showOpenDialog(null);
 				fileChooser.setTitle("Load SNC Catalogue from XML File Into Database");
 				if(fileLoad != null){
-					pathLoadFile.setText(fileLoad.getAbsolutePath());
-					loadDBFromFile(fileLoad.getAbsolutePath());
+					loadDBFromFile(ukhoCatalogueFile, fileLoad.getAbsolutePath(), DB_PATH);
 				}
 			}
 		});
@@ -246,7 +281,7 @@ public class MainPaneController implements Initializable{
 				boolean fullInfo = checkboxInfo.isSelected();
 				textResult.clear();
 				String searchInput = textSearchChart.getText().trim();
-				textResult.setText(chartUtils.displayChartRange(standardCharts, searchInput, fullInfo));
+				textResult.setText(chartUtils.displayChartRange(searchInput, fullInfo));
 			}
 		});
 		
@@ -262,24 +297,19 @@ public class MainPaneController implements Initializable{
 					boolean fullInfo = checkboxInfo.isSelected();
 					textResult.clear();
 					String searchInput = textSearchChart.getText().trim();
-					textResult.setText(chartUtils.displayChartRange(standardCharts, searchInput, fullInfo));
+					textResult.setText(chartUtils.displayChartRange(searchInput, fullInfo));
 				}
 			}
 		});
-		
-		
-	
-		
-		
+			
 	}
 	
 	
 	
 	/////////////////////////////////////////////////////////////////////
 	
-	
-	private void loadDBFromFile(String filePath) {
-		
+/*	
+	private void loadDBFromFile(String filePath) {	
 		textResult.setText("Wait for the app to finish loading chart database..............");
 		Task<UKHOCatalogueFile> fileLoadTask = new FileLoadTask(filePath);
 		
@@ -311,8 +341,11 @@ public class MainPaneController implements Initializable{
         thread.setDaemon(true);
         thread.start();
 	}
+*/
 	
 	private void setInfoAfterDBLoaded() {
+		metaRepository = database.getRepository(BaseFileMetadata.class);
+		appDTORepository = database.getRepository(AppDTO.class);
 		Cursor<BaseFileMetadata> metaResults = metaRepository.find();
 		Cursor<AppDTO> appDTOResults = appDTORepository.find();
 		AppDTO appDTOFound = appDTOResults.firstOrDefault();
@@ -366,16 +399,135 @@ public class MainPaneController implements Initializable{
 				ex.printStackTrace();
 			}
 	}
-	
-	
-	
 
 	
+	private void loadPaneSplash() {
+		try {
+			URL splashPaneUrl = getClass().getResource("/com/latidude99/sncxmlreader/pane/splashPane.fxml");
+		    FXMLLoader fxmlLoader = new FXMLLoader();
 	
-	
+		    splashPaneController = new SplashPaneController();
+	//	    splashPaneController.setMainPaneController(this);  
+		    
+		    fxmlLoader.setController(splashPaneController);
+		    fxmlLoader.setLocation(splashPaneUrl);
 
-}
+		    Parent paneSplash = (Parent) fxmlLoader.load();
+		    paneSplash.setStyle("-fx-background-color: transparent;");
+		    stageSplash = new Stage();
+		    stageSplash.initStyle(StageStyle.UNDECORATED);
+		    
+		    Scene scene = new Scene(paneSplash);
+//	     	scene.setFill(Color.TRANSPARENT);
+		    scene.setFill(null);
+		    stageSplash.initStyle(StageStyle.TRANSPARENT);
+		    stageSplash.setScene(scene);
+		    stageSplash.setAlwaysOnTop(true);
+		    stageSplash.show();
+		    
+		} catch(Exception e) {
+		       e.printStackTrace();
+		   }
+	}
+	
+	private UKHOCatalogueFile loadFileFromPath(String FILE_PATH) {
+		File file;
+		UKHOCatalogueFile ukhoCatalogueFile = null;
 		
+		try {
+	       	file = new File(FILE_PATH);
+	        FileInputStream fis = new FileInputStream(file);
+	         
+	        long fileSize = file.length();
+			System.out.println(fileSize);
+				
+		    JAXBContext jaxbContext;
+			jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
+			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		    ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
+		} catch (FileNotFoundException io) {
+			textResult.setText("Catalogue file not found (" + FILE_PATH + "). \n\n"
+					+ "Please load the file manually or download the latest catalogue file from UKHO website.");
+			io.printStackTrace();
+		} catch (JAXBException e) {
+			MessageBox.show("Parsing from XML format failed (file corrupted or not in correct format)", "Error");
+			e.printStackTrace();
+		}
+
+        return ukhoCatalogueFile;
+	}
+	
+	private void loadDBFromFile(UKHOCatalogueFile ukhoCatalogueFile, String filePath, String dbPath) {
+		
+		ukhoCatalogueFile = loadFileFromPath(filePath);
+		dbLoaderTask = new DBLoaderTask(ukhoCatalogueFile, dbPath);
+		loadPaneSplash();
+		splashPaneController.getProgressSplash().progressProperty().unbind();
+		splashPaneController.getProgressSplash().setStyle(" -fx-progress-color: blue;");
+    	splashPaneController.getProgressSplash().progressProperty().bind(dbLoaderTask.progressProperty());
+    	splashPaneController.getLabelSplash().textProperty().bind(dbLoaderTask.messageProperty());
+    	
+    	splashPaneController.getButtonSplash().setOnAction(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent event) {
+				Stage stage = (Stage) splashPaneController.getButtonSplash().getScene().getWindow();
+				stage.close();
+				}
+		});
+	
+		dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+				new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				splashPaneController.getProgressSplash().progressProperty().unbind();	
+				splashPaneController.getLabelSplash().textProperty().unbind();
+				splashPaneController.getLabelSplash().setText("Databse updated.");
+				splashPaneController.getButtonSplash().setText("Close window.");
+				setInfoAfterDBLoaded();
+				}
+			});
+		dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+							new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				database.getRepository(StandardNavigationChart.class).drop();
+				database.getRepository(BaseFileMetadata.class).drop();
+				database.getRepository(AppDTO.class).drop();
+				database.close();
+				textResult.setText("Catalogue not loaded.");
+			}
+		});
+		
+		Thread thread = new Thread(dbLoaderTask);
+        thread.setDaemon(true);
+        thread.start();
+	}
+	
+	
+	
+}
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		
 	

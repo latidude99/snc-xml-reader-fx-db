@@ -27,7 +27,7 @@
 		    <artifactId>jsoup</artifactId>
 		    <version>1.11.3</version>
 		</dependency>
-		
+		  
 		<!-- https://mvnrepository.com/artifact/org.dizitart/nitrite -->
 		<dependency>
 		    <groupId>org.dizitart</groupId>

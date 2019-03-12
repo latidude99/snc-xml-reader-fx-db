@@ -24,7 +24,7 @@ public class FileLoadTask extends Task<UKHOCatalogueFile> {
     protected UKHOCatalogueFile call() throws Exception {
 
         try {
-        	File file = new File(fileName);
+        	file = new File(fileName);
             FileInputStream fis = new FileInputStream(file);
            
 			long fileSize = file.length();
@@ -43,13 +43,14 @@ public class FileLoadTask extends Task<UKHOCatalogueFile> {
 
     @Override
     protected void failed() {
-        System.out.println("Could not load the catalogue file");
-        MessageBox.show("Loading XML file unsuccessful", "Error");
+//    	System.out.println("Could not load the catalogue file");
+//        MessageBox.show("Loading XML file unsuccessful", "Error");
     }
 
     @Override
     protected void succeeded() {
-//        System.out.println("Catalogue file loaded from: " + file.getAbsolutePath());
+       System.out.println("Catalogue file loaded from: " + file.getAbsolutePath() + ", charts: " + 
+    		   				ukhoCatalogueFile.getProducts().getPaper().getCharts().size());
     }
     
    

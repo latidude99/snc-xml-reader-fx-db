@@ -1,6 +1,5 @@
 package com.latidude99.sncxmlreader.utils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -8,35 +7,27 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 import javafx.concurrent.Task;
 
 public class DownloadTask extends Task<Void> {
-	public final String DOWNLOAD_LINK_BASE = "https://enavigator.ukho.gov.uk/";
-	public final String FILE_NAME = "snc_catalogue.xml";
-
+	public final String FILE_PATH = "user_data/snc_catalogue.xml";
     private String downloadPageString;
-//    ProgressBox progressBox = new ProgressBox();
+    private String downloadLinkBase;
 
-    public DownloadTask(String downloadPageString) {
+    public DownloadTask(String downloadLinkBase, String downloadPageString) {
+    	this.downloadLinkBase = downloadLinkBase;
         this.downloadPageString = downloadPageString;
     }
 
     @Override
     protected Void call() throws Exception {
-        String url = getUrlByIdJSOUP(downloadPageString);
+        String url = URLParser.getUrlByIdJSOUP(downloadLinkBase, downloadPageString);
         URLConnection connection = new URL(url).openConnection();
-      //the UKHO website doesn't send 'content-lenght' parameter
-        long fileLength = 19_858_062;  //connection.getContentLengthLong(); 
         
-        System.out.println("fileLength " + fileLength);
-//        progressBox.show(0L, "Downloading Catalogue File...");
-
+      //the UKHO website doesn't send 'content-lenght' parameter so ~value hardcoded to get visual progress
+        long fileLength = 19_858_062;  //connection.getContentLengthLong(); 
         try (	InputStream is = connection.getInputStream();
-                OutputStream os = Files.newOutputStream(Paths.get(FILE_NAME))) 
+                OutputStream os = Files.newOutputStream(Paths.get(FILE_PATH))) 
         	{
 
             long nread = 0L;
@@ -47,7 +38,7 @@ public class DownloadTask extends Task<Void> {
                 nread += n;
                 this.updateProgress(nread, fileLength);
                 this.updateMessage("Downloaded: " + nread + " bytes");
-                System.out.println("nread " + nread);
+//                System.out.println("nread " + nread);
 //                progressBox.getLbl().setText("Downloaded: " + nread);
             }
 //        }catch(IOException e) {
@@ -67,8 +58,8 @@ public class DownloadTask extends Task<Void> {
     protected void succeeded() {
         System.out.println("downloaded");
     }
-    
-    private String getUrlByIdJSOUP(String downloadPageString) {
+ /*  
+    private String getUrlByIdJSOUP(String downloadLinkBase, String downloadPageString) {
 		String url = "";
 		Element link = null;
 		try {
@@ -83,8 +74,9 @@ public class DownloadTask extends Task<Void> {
 			e.getMessage();
 			MessageBox.show("Username or/and Password incorrect", "Warning");
 		}
-		return DOWNLOAD_LINK_BASE + url;	
+		return downloadLinkBase + url;	
 	}
+ */
 }
 
 

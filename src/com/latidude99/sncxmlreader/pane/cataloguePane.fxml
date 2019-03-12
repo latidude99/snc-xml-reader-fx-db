@@ -30,21 +30,19 @@
 
 <HBox alignment="TOP_RIGHT" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.latidude99.sncxmlreader.controller.CataloguePaneController">
    <children>
-      <Button id="button-web-view" fx:id="buttonWebView" minWidth="200.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="257.0" text="Download Catalogue XML (requires login)" textAlignment="CENTER" />
-      <Button id="button-refresh" fx:id="buttonRefresh" mnemonicParsing="false" prefWidth="120.0" text="Refresh Catalogue">
-         <HBox.margin>
-            <Insets left="10.0" />
-         </HBox.margin>
-      </Button>
+      <Button id="button-web-view" fx:id="buttonWebView" minWidth="200.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="435.0" text="Download Catalogue &amp; Update Database from UKHO Website (requires login)" textAlignment="CENTER" />
       <Label id="label-web-address" fx:id="labelWebAddress" prefHeight="25.0" text="https://enavigator.ukho.gov.uk" textAlignment="CENTER">
          <HBox.margin>
-            <Insets left="15.0" right="15.0" />
+            <Insets left="10.0" right="5.0" />
          </HBox.margin>
       </Label>
-      <Hyperlink id="link-help" fx:id="linkHelp" alignment="TOP_CENTER" prefHeight="23.0" prefWidth="60.0" text="Help" textAlignment="CENTER" textFill="#2108de" textOverrun="WORD_ELLIPSIS" />
+      <Hyperlink id="link-help" fx:id="linkHelp" alignment="TOP_CENTER" prefHeight="23.0" prefWidth="40.0" text="Help" textAlignment="CENTER" textFill="#2108de" textOverrun="WORD_ELLIPSIS">
+         <HBox.margin>
+            <Insets left="5.0" />
+         </HBox.margin></Hyperlink>
       <Hyperlink id="link-about" fx:id="linkAbout" prefWidth="50.0" text="About" textAlignment="CENTER" textFill="#9b1ede">
          <HBox.margin>
-            <Insets left="30.0" right="5.0" />
+            <Insets left="10.0" right="5.0" />
          </HBox.margin>
       </Hyperlink>
    </children>

@@ -20,23 +20,14 @@
 
 package com.latidude99.sncxmlreader.controller;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 import com.latidude99.sncxmlreader.utils.Info;
-import com.latidude99.sncxmlreader.utils.LoadTask;
 import com.latidude99.sncxmlreader.utils.MessageBox;
 import com.latidude99.sncxmlreader.utils.MessageBoxOn;
 
 import javafx.fxml.Initializable;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -44,13 +35,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
@@ -59,8 +45,6 @@ public class CataloguePaneController implements Initializable{
 	
 	@FXML
 	private Button buttonWebView;
-	@FXML
-	private Button buttonRefresh;
 	@FXML
 	private Label labelWebAddress;
 	@FXML
@@ -84,9 +68,7 @@ public class CataloguePaneController implements Initializable{
 	public Label getLabelWebAddress() {
 		return labelWebAddress;
 	}
-	public Button getButtonRefresh() {
-		return buttonRefresh;
-	}
+	
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -117,10 +99,6 @@ public class CataloguePaneController implements Initializable{
 		
 	        
 	}
-		
-		
- 
-	
 	
 	
 	private void configureLinks() {
