@@ -1,26 +1,39 @@
 package com.latidude99.sncxmlreader.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 //import java.io.InputStreamReader;
 //import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 //import java.net.URLConnection;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.dizitart.no2.Nitrite;
+import org.dizitart.no2.objects.ObjectRepository;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLFormElement;
 import org.w3c.dom.html.HTMLInputElement;
 
+import com.latidude99.sncxmlreader.db.DB;
+import com.latidude99.sncxmlreader.db.DBLoaderTask;
+import com.latidude99.sncxmlreader.model.BaseFileMetadata;
+import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 import com.latidude99.sncxmlreader.utils.ConnectionUtils;
 import com.latidude99.sncxmlreader.utils.DownloadTask;
 import com.latidude99.sncxmlreader.utils.Downloader2;
+import com.latidude99.sncxmlreader.utils.FileLoadTask;
 import com.latidude99.sncxmlreader.utils.MessageBox;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -40,11 +53,35 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class WebPaneController implements Initializable{
+	private static final String FILE_PATH = "user_data/snc_catalogue.xml";
+	private static String DB_PATH = "user_data/snc_catalogue.db";
+	public final String UKHO_HOME = "https://enavigator.ukho.gov.uk/";
+	public final String UKHO_LOGIN = "https://enavigator.ukho.gov.uk/Login";
+	public final String UKHO_DOWNLOAD = "https://enavigator.ukho.gov.uk/Download";
+	public final String FILE_PARAM = "?file=";
+	
+    String setUsername =  "document.getElementsByName('un')[0].value='" + "PiotrC" + "'";
+    String setPassword = "document.getElementsByName('pw')[0].value='" + "flamenco10ST" + "';";
+	
+    WebEngine webEngine;
+    final BooleanProperty loginAttempted = new SimpleBooleanProperty(false);
+    Downloader2 downloader = new Downloader2();
+    Preferences userPreferences = Preferences.userRoot().node("/sncxmlreader");
+    Task<Void> downloadTask;
+    Task<UKHOCatalogueFile> fileLoadTask;
+    DBLoaderTask dbLoaderTask;
+    UKHOCatalogueFile ukhoCatalogueFile;
+    File file;
+    Nitrite database;
+    int existingChartsNum;
+    String existingCatalogueDate;
+    
 	
 	@FXML
     private WebView webView;
@@ -71,6 +108,12 @@ public class WebPaneController implements Initializable{
 	@FXML
 	Button buttonDelete;
 	@FXML
+	Button buttonClose;
+	@FXML
+	Button buttonStop;
+	@FXML
+	Rectangle rectangleCover;
+	@FXML
 	MainPaneController mainPaneController;
 /*	
 	public MainPaneController getMainPaneController() {
@@ -80,23 +123,7 @@ public class WebPaneController implements Initializable{
 		this.mainPaneController = mainPaneController;
 	}
 */	
-	public final String UKHO_HOME = "https://enavigator.ukho.gov.uk/";
-	public final String UKHO_LOGIN = "https://enavigator.ukho.gov.uk/Login";
-	public final String UKHO_DOWNLOAD = "https://enavigator.ukho.gov.uk/Download";
-	public final String FILE_PARAM = "?file=";
 	
-	
-    String setUsername =  "document.getElementsByName('un')[0].value='" + "PiotrC" + "'";
-    String setPassword = "document.getElementsByName('pw')[0].value='" + "flamenco10ST" + "';";
-	
-    WebEngine webEngine;
-    final BooleanProperty loginAttempted = new SimpleBooleanProperty(false);
-    Downloader2 downloader = new Downloader2();
-    Preferences userPreferences = Preferences.userRoot().node("/sncxmlreader");
-    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    Task<Void> downloadTask;
-    Task<Void> loadTask;
-    File file;
     
 
 	@Override
@@ -105,6 +132,7 @@ public class WebPaneController implements Initializable{
 		configureCredentials();
 		connectionConfig();	
 		configureWebView();
+		readExistingDB();
 		configureButtons();            		
 	}
 	
@@ -121,10 +149,13 @@ public class WebPaneController implements Initializable{
 	}
 	
 	private void configureWebView() {
+		rectangleCover.setVisible(true);
 		progressIndicator.setVisible(false);
 		labelDownloaded.setVisible(false);
 		buttonUpdate.setVisible(false);
 		buttonDelete.setVisible(false);
+		buttonClose.setVisible(false);
+		buttonStop.setVisible(false);
         webEngine = webView.getEngine();
 		webEngine.setJavaScriptEnabled(true);
 		
@@ -156,7 +187,6 @@ public class WebPaneController implements Initializable{
                                 password.setValue(textPassword.getText());
                                 form.submit();
                             }
-                        
                     }
                 }
             }
@@ -167,6 +197,14 @@ public class WebPaneController implements Initializable{
                 System.out.println("Load Exception: " + exception);
             }
         });
+	}
+	
+	private void readExistingDB() {
+		database = DB.getDB(DB_PATH);
+		ObjectRepository<StandardNavigationChart> chartRepository = database.getRepository(StandardNavigationChart.class);
+		existingChartsNum = chartRepository.find().size();
+		ObjectRepository<BaseFileMetadata>metaRepository = database.getRepository(BaseFileMetadata.class);
+		existingCatalogueDate = metaRepository.find().firstOrDefault().getMD_DateStamp();
 	}
 	
 	private void configureButtons() {
@@ -212,11 +250,13 @@ public class WebPaneController implements Initializable{
 	    buttonDownload.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){	
+				rectangleCover.setVisible(true);
+				buttonSignIn.setDisable(true);
 				buttonDownload.setDisable(true);
 				buttonCancel.setDisable(false);
 				webView.setOpacity(0.3);
 								
-				downloadTask = new DownloadTask(UKHO_DOWNLOAD);
+				downloadTask = new DownloadTask(UKHO_HOME, UKHO_DOWNLOAD);
 				progressIndicator.setVisible(true);
 				labelDownloaded.setVisible(true);
 				progressIndicator.progressProperty().bind(downloadTask.progressProperty());
@@ -226,15 +266,26 @@ public class WebPaneController implements Initializable{
 	                       						new EventHandler<WorkerStateEvent>() {
 	                           @Override
 	                           public void handle(WorkerStateEvent t) {
-	                        	   labelDownloaded.textProperty().unbind();
-	                        	   labelDownloaded.setText("Download complete.");
-	                        	   buttonUpdate.setVisible(true);
+	                        	   ukhoCatalogueFile = loadFileFromPath(FILE_PATH);
+	                        	   String downloadedCatalogueDate = 
+	                        			   ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp();
+	                        	   int downloadedChartsNum = 
+	                        			   ukhoCatalogueFile.getProducts().getPaper().getCharts().size();
+	                           	   labelDownloaded.textProperty().unbind();
+	                           	   progressIndicator.progressProperty().unbind();
+	                        	   labelDownloaded.setText("Download complete. Catalogue Date: " + downloadedCatalogueDate);
+	                        	   buttonUpdate.setVisible(true);         
+	                        	   if(downloadedCatalogueDate.equals(existingCatalogueDate) 
+	                        			   && existingChartsNum == downloadedChartsNum)
+	                        		   MessageBox.show
+	                        		   ("Dowloaded catalogue version is the same as the one already in Database",  "Info");
 	                           }
 	                       });
 				downloadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
    												new EventHandler<WorkerStateEvent>() {
 						       @Override
 						       public void handle(WorkerStateEvent t) {
+						    	   buttonSignIn.setDisable(false);
 						    	   buttonDownload.setDisable(false);
 						    	   buttonCancel.setDisable(true);
 						    	   buttonUpdate.setVisible(false);
@@ -245,8 +296,8 @@ public class WebPaneController implements Initializable{
 						    	   progressIndicator.setVisible(false);
 						    	   labelDownloaded.setVisible(false);
 						    	   
-						    	   file = new File("snc_catalogue.xml");
-						    	   buttonDelete.setText("Delete file: " + file.getName());
+						    	   
+						    	   buttonDelete.setText("Delete file: " + FILE_PATH);
 						    	   buttonDelete.setVisible(true);
 						    	   MessageBox.show("Could not save the file. Delete the old file and try again. ", "Error");
 						       }
@@ -259,7 +310,8 @@ public class WebPaneController implements Initializable{
 	    
 	    buttonCancel.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
-			public void handle(ActionEvent e){		
+			public void handle(ActionEvent e){
+				buttonSignIn.setDisable(false);
 				buttonDownload.setDisable(false);
 				buttonCancel.setDisable(true);
 				buttonUpdate.setVisible(false);
@@ -274,9 +326,61 @@ public class WebPaneController implements Initializable{
 	    
 	    buttonUpdate.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
+			public void handle(ActionEvent e){
+				buttonDownload.setDisable(true);
+				buttonCancel.setDisable(true);
+				dbLoaderTask = new DBLoaderTask(ukhoCatalogueFile, FILE_PATH);
+		    	progressIndicator.progressProperty().unbind();
+		    	progressIndicator.setStyle(" -fx-progress-color: green;");
+		    	progressIndicator.progressProperty().bind(dbLoaderTask.progressProperty());
+		    	labelDownloaded.textProperty().bind(dbLoaderTask.messageProperty());
+		    	buttonUpdate.setVisible(false);
+		    	buttonStop.setVisible(true);
+		    	
+				dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+						new EventHandler<WorkerStateEvent>() {
+					@Override
+					public void handle(WorkerStateEvent t) {
+						String chartLoadedNum = dbLoaderTask.messageProperty().getValue().toString();
+						labelDownloaded.textProperty().unbind();
+						labelDownloaded.setText(chartLoadedNum + ". Databse updated.");
+						buttonStop.setVisible(false);
+						buttonClose.setVisible(true);
+						}
+					});
+				dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+									new EventHandler<WorkerStateEvent>() {
+					@Override
+					public void handle(WorkerStateEvent t) {
+						String chartLoadedNum = dbLoaderTask.messageProperty().getValue().toString();
+						labelDownloaded.setText("Process interrupted. " + chartLoadedNum);
+					}
+				});
+				
+				Thread thread = new Thread(dbLoaderTask);
+		        thread.setDaemon(true);
+		        thread.start();
+				
+//				
+			}
+		});
+	    
+	    buttonStop.setOnAction(new EventHandler<ActionEvent>(){
+			@Override
 			public void handle(ActionEvent e){	
-//				buttonUpdate.setText("Close the browser window and refresh catalogue");
-				Stage stage = (Stage) buttonUpdate.getScene().getWindow();
+				progressIndicator.progressProperty().unbind();
+				labelDownloaded.textProperty().unbind();
+				dbLoaderTask.cancel();
+				buttonStop.setVisible(false);
+				buttonUpdate.setVisible(true);		
+			}
+		});
+	    
+	    buttonClose.setOnAction(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent e){	
+				progressIndicator.progressProperty().unbind();
+				Stage stage = (Stage) buttonClose.getScene().getWindow();
 				stage.close();
 			}
 		});
@@ -285,7 +389,7 @@ public class WebPaneController implements Initializable{
 			@Override
 			public void handle(ActionEvent e){	
 				try {
-					Files.delete(file.toPath());
+					Files.deleteIfExists(Paths.get("user_data/snc_catalogue.xml"));
 					buttonDownload.setDisable(false);
 					buttonCancel.setDisable(true);
 					buttonUpdate.setVisible(false);
@@ -315,6 +419,58 @@ public class WebPaneController implements Initializable{
 			}
 		});
 	        
+	}
+	
+	private UKHOCatalogueFile loadFileFromPath(String FILE_PATH) {
+		File file;
+		UKHOCatalogueFile ukhoCatalogueFile = null;
+		
+		try {
+	       	file = new File(FILE_PATH);
+	        FileInputStream fis = new FileInputStream(file);
+	         
+	        long fileSize = file.length();
+			System.out.println(fileSize);
+				
+		    JAXBContext jaxbContext;
+			jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
+			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		    ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
+		} catch (FileNotFoundException io) {
+			MessageBox.show("Catalogue file not found (" + FILE_PATH + ").", "Error");
+			io.printStackTrace();
+		} catch (JAXBException e) {
+			MessageBox.show("Parsing from XML format failed (file corrupted or not in correct format)", "Error");
+			e.printStackTrace();
+		}
+
+        return ukhoCatalogueFile;
+	}
+	
+	// not used for the time being
+	private UKHOCatalogueFile loadFileFromPathWithTask(String FILE_PATH) {
+		fileLoadTask = new FileLoadTask(FILE_PATH);
+		
+		fileLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+				new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {					
+				ukhoCatalogueFile = fileLoadTask.getValue();
+				}
+			});
+		fileLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+							new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+			
+			}
+		});
+		
+		Thread thread = new Thread(fileLoadTask);
+        thread.setDaemon(true);
+        thread.start();
+		
+		return ukhoCatalogueFile;
 	}
 	
 	private void connectionConfig() {
@@ -355,7 +511,7 @@ public class WebPaneController implements Initializable{
             }
         }
     }
-
+    
     
 	
 	
