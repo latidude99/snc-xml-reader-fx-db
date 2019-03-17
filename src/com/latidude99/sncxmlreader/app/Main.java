@@ -22,9 +22,14 @@ package com.latidude99.sncxmlreader.app;
 	
 import java.io.IOException;
 
+import com.latidude99.sncxmlreader.utils.Info;
+
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
@@ -36,16 +41,27 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) throws IOException {
-		final String appName = "Standard Navigation Charts XML Reader v0.1";
+		final String appName = "Standard Navigation Charts XML Reader " + Info.APP_VERSION; 
+		
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+		       @Override
+		       public void handle(WindowEvent e) {
+		          Platform.exit();
+		          System.exit(0);
+		       }
+		    });
 		
 			Parent parent = (Parent) FXMLLoader.load(getClass().getResource("/com/latidude99/sncxmlreader/pane/MainPane.fxml"));
 			Scene scene = new Scene(parent);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle(appName);
-			primaryStage.setMinWidth(720);
-			primaryStage.setMinHeight(630);
+			primaryStage.setMaxWidth(732);
+			primaryStage.setMinHeight(730);
+			primaryStage.setResizable(false);
 			primaryStage.show();
 		
 	}
+	
+	
 	
 }

@@ -9,7 +9,7 @@ import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 import javafx.concurrent.Task;
 
-public class DBLoaderTask extends Task<Void> {
+public class DBLoaderTask extends Task<Nitrite> {
 	private UKHOCatalogueFile ukhoCatalogueFile;
 	private String dbPath;
 	
@@ -19,18 +19,18 @@ public class DBLoaderTask extends Task<Void> {
     }
 	
 	@Override
-	protected Void call() throws Exception {
-		loadChartsInDB();
-		return null;
+	protected Nitrite call() throws Exception {
+		Nitrite database = loadChartsInDB();
+		return database;
 	}
 	
-	private void loadChartsInDB() {
-		Nitrite database = DB.getDB(dbPath);
-		
-		database.getRepository(StandardNavigationChart.class).drop();
-		database.getRepository(BaseFileMetadata.class).drop();
-		database.getRepository(AppDTO.class).drop();
-		
+	private Nitrite loadChartsInDB() {
+		Nitrite database = Nitrite.builder()
+			    .compressed()
+			    .filePath(dbPath)
+			    .openOrCreate("user", "password");
+		System.out.println("loadChartsInDB: " + database.getContext().toString());
+		Database.databaseInstance = database;
 		ObjectRepository<StandardNavigationChart> chartRepository = database.getRepository(StandardNavigationChart.class);
 		ObjectRepository<BaseFileMetadata>metaRepository = database.getRepository(BaseFileMetadata.class);
 		ObjectRepository<AppDTO> appDTORepository = database.getRepository(AppDTO.class);
@@ -39,16 +39,22 @@ public class DBLoaderTask extends Task<Void> {
 		long loadedChartsNum = 0;
 		
 		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts()) {
+			 if (this.isCancelled()) {
+				 this.updateMessage("Loading database stopped, loaded:  " + loadedChartsNum + " of " + totalChartsNum + " charts");
+	             break;
+			 }
 			chartRepository.insert(chart);
 			loadedChartsNum++;
 			this.updateProgress(loadedChartsNum, totalChartsNum);
-			this.updateMessage("Loaded:  " + loadedChartsNum + " charts");
+			this.updateMessage("Loaded:  " + loadedChartsNum + " of " + totalChartsNum + " charts");
 			System.out.println(chart.getShortName());
 		}
 		metaRepository.insert(ukhoCatalogueFile.getBaseFileMetadata());
 		AppDTO appDTO = new AppDTO();
 		appDTO.setSchemaVersion(ukhoCatalogueFile.getSchemaVersion());
 		appDTORepository.insert(appDTO);
+		
+		return database;
 	}
 }
 

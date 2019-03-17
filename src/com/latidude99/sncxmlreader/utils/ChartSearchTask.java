@@ -4,9 +4,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 import org.dizitart.no2.objects.filters.ObjectFilters;
-import org.dizitart.no2.*;
+
 import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.Metadata;
 import com.latidude99.sncxmlreader.model.NoticesToMariners;
@@ -14,46 +15,43 @@ import com.latidude99.sncxmlreader.model.Panel;
 import com.latidude99.sncxmlreader.model.Polygon;
 import com.latidude99.sncxmlreader.model.Position;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+import javafx.concurrent.Task;
 
-public class ChartUtils {
-	Nitrite database;
-	ObjectRepository<StandardNavigationChart> chartRepository;
+public class ChartSearchTask extends Task<String> {
+	private Nitrite database;
+	private ObjectRepository<StandardNavigationChart> chartRepository;
+	private String input;
+	private boolean fullInfo;
 	
+	
+	public ChartSearchTask(Nitrite database, String input, boolean fullInfo) {
+		this.database = database;
+		this.input = input;
+		this.fullInfo = fullInfo;
+    }
 
-/*
-	private static UKHOCatalogueFile ukhoCatalogueFile;
-	
-	public static UKHOCatalogueFile getUkhoCatalogueFile() {
-		System.out.println("Getting ukhoCatalogueFile, schema version " + ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp());
-		return ukhoCatalogueFile;
-	}
-	public static void setUkhoCatalogueFile(UKHOCatalogueFile catalogue) {
-		System.out.println("Setting ukhoCatalogueFile, schema version " + catalogue.getBaseFileMetadata().getMD_DateStamp());
-		ukhoCatalogueFile = catalogue;
-	}
+    @Override
+    protected String call() throws Exception {
+    	System.out.println("ChartSearchTask started");
+    	return displayChartRange(input, fullInfo);
+    }
 
-	public static Map<String, StandardNavigationChart> getCharts(){
-		Map<String, StandardNavigationChart> charts = new TreeMap<String, StandardNavigationChart>();
-		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts())
-			charts.put(chart.getMetadata().getCatalogueNumber(), chart);
-		
-		return charts;
-	}
-	
-	public Map<String, StandardNavigationChart> getCharts(UKHOCatalogueFile ukhoCatalogueFile){
-		Map<String, StandardNavigationChart> charts = new TreeMap<String, StandardNavigationChart>();
-		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts())
-			charts.put(chart.getMetadata().getCatalogueNumber(), chart);
-		
-		return charts;
-	}
-	
-*/		
-	public String displayChartRange(String dbPath, String input, boolean fullInfo) {
+    @Override
+    protected void failed() {
+    	
+    }
+
+    @Override
+    protected void succeeded() {
+       
+    }
+    
+    
+    public String displayChartRange(String input, boolean fullInfo) {
 		StringBuilder sb = new StringBuilder();
 		Set<String> numbersSearched = FormatUtils.parseInput(input);
 		System.out.println(numbersSearched);
-		Map<String, StandardNavigationChart> chartsFound = findChartsFromRepository(dbPath, numbersSearched);
+		Map<String, StandardNavigationChart> chartsFound = findChartsFromRepository(numbersSearched);
         
 		sb.append(printSearchSummary(chartsFound, numbersSearched));
 		
@@ -72,16 +70,20 @@ public class ChartUtils {
 	
 	
 	
-	private Map<String, StandardNavigationChart> findChartsFromRepository(String dbPath, Set<String> numbersSearched){
-		database = Database.getDatabaseInstance(dbPath);
+	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched){
 		System.out.println(database.toString());
 		chartRepository = database.getRepository(StandardNavigationChart.class);		
 		Map<String, StandardNavigationChart> chartsFound = new TreeMap<>();   
-				
+		long count = 0;		
         for(String searchNum : numbersSearched) {
         	StandardNavigationChart chart = null;
         	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
+        	count++;
+        	long searchedNum = numbersSearched.size();
+        	this.updateProgress(count, searchedNum);
+        	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
         	System.out.println("chart: " + chart);
+        	System.out.println("count: " + count + ", total searched: " + searchedNum);
         	if(chart != null)
         		chartsFound.put(searchNum, chart);	
         }
@@ -96,7 +98,7 @@ public class ChartUtils {
         	chartsEntered = " charts";
         if(chartsFound.keySet().size() > 1)
         	chartsListed = " charts";
-        sb.append("Searching for " + numbersSearched.size() + chartsEntered + "\n");
+        sb.append("Searched for " + numbersSearched.size() + chartsEntered + "\n");
         sb.append(FormatUtils.printSet20Cols(numbersSearched));
         sb.append("\n");
         sb.append("\nFound " + chartsFound.keySet().size() + chartsListed + "\n");
@@ -219,13 +221,15 @@ public class ChartUtils {
         return sb.toString();
 	}
 	
-	
-	
-	
-	
-	
-
+   
 }
+
+
+
+
+
+
+
 
 
 

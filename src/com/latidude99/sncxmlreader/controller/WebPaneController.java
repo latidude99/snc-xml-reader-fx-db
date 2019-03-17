@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 //import java.net.URLConnection;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
@@ -25,8 +27,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLFormElement;
 import org.w3c.dom.html.HTMLInputElement;
 
-import com.latidude99.sncxmlreader.db.DB;
 import com.latidude99.sncxmlreader.db.DBLoaderTask;
+import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.BaseFileMetadata;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
@@ -34,6 +36,7 @@ import com.latidude99.sncxmlreader.utils.ConnectionUtils;
 import com.latidude99.sncxmlreader.utils.DownloadTask;
 import com.latidude99.sncxmlreader.utils.Downloader2;
 import com.latidude99.sncxmlreader.utils.FileLoadTask;
+import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.MessageBox;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -59,12 +62,16 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class WebPaneController implements Initializable{
-	private static final String FILE_PATH = "user_data/snc_catalogue.xml";
+	public static String CONFIG_PATH = "user_data/config.txt";
+	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
 	public final String UKHO_HOME = "https://enavigator.ukho.gov.uk/";
 	public final String UKHO_LOGIN = "https://enavigator.ukho.gov.uk/Login";
 	public final String UKHO_DOWNLOAD = "https://enavigator.ukho.gov.uk/Download";
 	public final String FILE_PARAM = "?file=";
+	
+	LocalDateTime localDateTime;
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
 	
     String setUsername =  "document.getElementsByName('un')[0].value='" + "PiotrC" + "'";
     String setPassword = "document.getElementsByName('pw')[0].value='" + "flamenco10ST" + "';";
@@ -81,6 +88,10 @@ public class WebPaneController implements Initializable{
     Nitrite database;
     int existingChartsNum;
     String existingCatalogueDate;
+    
+    public void setDatabase(Nitrite database) {
+    	this.database = database;
+    }
     
 	
 	@FXML
@@ -113,27 +124,32 @@ public class WebPaneController implements Initializable{
 	Button buttonStop;
 	@FXML
 	Rectangle rectangleCover;
-	@FXML
+	
 	MainPaneController mainPaneController;
-/*	
 	public MainPaneController getMainPaneController() {
 		return mainPaneController;
 	}
 	public void setMainPaneController(MainPaneController mainPaneController) {
 		this.mainPaneController = mainPaneController;
 	}
-*/	
+	
 	
     
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
+		configurePaths();
 		configureCredentials();
 		connectionConfig();	
 		configureWebView();
 		readExistingDB();
 		configureButtons();            		
+	}
+	
+	private void configurePaths() {
+		FILE_PATH = FileUtils.readXMLPath(CONFIG_PATH, FILE_PATH);
+		DB_PATH = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
 	}
 	
 	
@@ -200,11 +216,14 @@ public class WebPaneController implements Initializable{
 	}
 	
 	private void readExistingDB() {
-		database = DB.getDB(DB_PATH);
+		String dbPath = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
+		database = Database.getDatabaseInstance(dbPath);
 		ObjectRepository<StandardNavigationChart> chartRepository = database.getRepository(StandardNavigationChart.class);
-		existingChartsNum = chartRepository.find().size();
 		ObjectRepository<BaseFileMetadata>metaRepository = database.getRepository(BaseFileMetadata.class);
-		existingCatalogueDate = metaRepository.find().firstOrDefault().getMD_DateStamp();
+		if(chartRepository != null && metaRepository != null) {
+			existingChartsNum = chartRepository.find().size();
+			existingCatalogueDate = metaRepository.find().firstOrDefault().getMD_DateStamp();
+		}
 	}
 	
 	private void configureButtons() {
@@ -266,6 +285,7 @@ public class WebPaneController implements Initializable{
 	                       						new EventHandler<WorkerStateEvent>() {
 	                           @Override
 	                           public void handle(WorkerStateEvent t) {
+	                        	   FILE_PATH = FileUtils.readXMLPath(CONFIG_PATH, FILE_PATH);
 	                        	   ukhoCatalogueFile = loadFileFromPath(FILE_PATH);
 	                        	   String downloadedCatalogueDate = 
 	                        			   ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp();
@@ -274,11 +294,23 @@ public class WebPaneController implements Initializable{
 	                           	   labelDownloaded.textProperty().unbind();
 	                           	   progressIndicator.progressProperty().unbind();
 	                        	   labelDownloaded.setText("Download complete. Catalogue Date: " + downloadedCatalogueDate);
-	                        	   buttonUpdate.setVisible(true);         
+	                        	   buttonUpdate.setVisible(true); 
 	                        	   if(downloadedCatalogueDate.equals(existingCatalogueDate) 
-	                        			   && existingChartsNum == downloadedChartsNum)
+	                        			   && existingChartsNum == downloadedChartsNum) {
 	                        		   MessageBox.show
 	                        		   ("Dowloaded catalogue version is the same as the one already in Database",  "Info");
+	                        	   buttonUpdate.setText("Update Catalog Anyway");
+	                        	   buttonStop.setVisible(true);
+	                        	   buttonStop.setOnAction(new EventHandler<ActionEvent>(){
+		                       			@Override
+		                    			public void handle(ActionEvent e){	
+		                    				progressIndicator.progressProperty().unbind();
+		                    				labelDownloaded.textProperty().unbind();
+		                    				buttonStop.setVisible(false);
+		                    				buttonUpdate.setVisible(true);		
+		                    			}
+		                    		});
+	                        	   }
 	                           }
 	                       });
 				downloadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
@@ -297,8 +329,8 @@ public class WebPaneController implements Initializable{
 						    	   labelDownloaded.setVisible(false);
 						    	   
 						    	   
-						    	   buttonDelete.setText("Delete file: " + FILE_PATH);
-						    	   buttonDelete.setVisible(true);
+//						    	   buttonDelete.setText("Delete file: " + FILE_PATH);
+//						    	   buttonDelete.setVisible(true);
 						    	   MessageBox.show("Could not save the file. Delete the old file and try again. ", "Error");
 						       }
 						   });
@@ -327,17 +359,30 @@ public class WebPaneController implements Initializable{
 	    buttonUpdate.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){
+				final String catalogueDate = ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp();
+				localDateTime = LocalDateTime.now();
+				String loadDate = localDateTime.format(formatter);
+				String dbPathNew = "user_data/snc_catalogue_date_" + 
+						catalogueDate + "_loaded_on_" + 
+						loadDate + ".db";
 				buttonDownload.setDisable(true);
 				buttonCancel.setDisable(true);
-				dbLoaderTask = new DBLoaderTask(ukhoCatalogueFile, FILE_PATH);
+				dbLoaderTask = new DBLoaderTask(ukhoCatalogueFile, dbPathNew);
 		    	progressIndicator.progressProperty().unbind();
-		    	progressIndicator.setStyle(" -fx-progress-color: green;");
+		    	progressIndicator.setStyle(" -fx-progress-color: cornflowerblue;");
 		    	progressIndicator.progressProperty().bind(dbLoaderTask.progressProperty());
 		    	labelDownloaded.textProperty().bind(dbLoaderTask.messageProperty());
 		    	buttonUpdate.setVisible(false);
 		    	buttonStop.setVisible(true);
-		    	
-				dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+/*		    	
+		    	dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_RUNNING, 
+						new EventHandler<WorkerStateEvent>() {
+					@Override
+					public void handle(WorkerStateEvent t) {
+						
+						}
+					});
+*/		    	dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
 						new EventHandler<WorkerStateEvent>() {
 					@Override
 					public void handle(WorkerStateEvent t) {
@@ -346,6 +391,10 @@ public class WebPaneController implements Initializable{
 						labelDownloaded.setText(chartLoadedNum + ". Databse updated.");
 						buttonStop.setVisible(false);
 						buttonClose.setVisible(true);
+						Database.databaseInstance = dbLoaderTask.getValue();
+						System.out.println("DB_PATH: " + DB_PATH);
+						System.out.println("dbPathNew: " + dbPathNew);
+						FileUtils.writeConfig(FILE_PATH, dbPathNew);
 						}
 					});
 				dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
@@ -353,6 +402,7 @@ public class WebPaneController implements Initializable{
 					@Override
 					public void handle(WorkerStateEvent t) {
 						String chartLoadedNum = dbLoaderTask.messageProperty().getValue().toString();
+						labelDownloaded.textProperty().unbind();
 						labelDownloaded.setText("Process interrupted. " + chartLoadedNum);
 					}
 				});

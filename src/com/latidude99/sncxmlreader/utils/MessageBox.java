@@ -50,6 +50,7 @@ public class MessageBox {
         
         Scene scene = new Scene(pane);
         stage.setScene(scene);
+        stage.setAlwaysOnTop(true);
         stage.showAndWait();
         }
 }

@@ -27,10 +27,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -41,14 +44,17 @@ import javax.xml.bind.Unmarshaller;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.Cursor;
 import org.dizitart.no2.objects.ObjectRepository;
+
+import com.latidude99.sncxmlreader.utils.ChartSearchTask;
 import com.latidude99.sncxmlreader.utils.ChartUtils;
 import com.latidude99.sncxmlreader.utils.FileLoadTask;
+import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.FormatUtils;
 import com.latidude99.sncxmlreader.utils.Info;
 import com.latidude99.sncxmlreader.utils.MessageBox;
-import com.latidude99.sncxmlreader.db.DB;
 import com.latidude99.sncxmlreader.db.DBLoader;
 import com.latidude99.sncxmlreader.db.DBLoaderTask;
+import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.AppDTO;
 import com.latidude99.sncxmlreader.model.BaseFileMetadata;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
@@ -67,6 +73,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -80,8 +87,10 @@ import javafx.stage.StageStyle;
 
 
 public class MainPaneController implements Initializable{
-	private static final String FILE_PATH = "user_data/snc_catalogue.xml";
-	private static final String DB_PATH = "user_data/snc_catalogue.db";
+	private static final String CONFIG_PATH = "user_data/config.txt";
+	private static String FILE_PATH = "user_data/snc_catalogue.xml";
+	private static String DB_PATH = "user_data/snc_catalogue.db";
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
 	
 	ObjectRepository<StandardNavigationChart> chartRepository;
     ObjectRepository<BaseFileMetadata> metaRepository;
@@ -90,6 +99,9 @@ public class MainPaneController implements Initializable{
     FileLoadTask fileLoadTask;
     DBLoader dbLoader;
     DBLoaderTask dbLoaderTask;
+    public void setDatabase(Nitrite database) {
+    	this.database = database;
+    }
 	
 	@FXML
 	InputPaneController inputPaneController;
@@ -120,9 +132,10 @@ public class MainPaneController implements Initializable{
     Map<String, StandardNavigationChart> standardCharts;
     BaseFileMetadata meta;
     String schemaVersion;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH.mm");
+    LocalDateTime localDateTime;
     ChartUtils chartUtils;
     Task<Void> loadTask;
+    Task<String> chartSearchTask;
     File fileTmp;
     
   
@@ -143,35 +156,24 @@ public class MainPaneController implements Initializable{
     Hyperlink linkAbout;
     CheckBox checkboxInfo;
     Button buttonRefresh;
+    ProgressBar progressSearch;
     
     
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		
-//		MessageBox.show(splashPaneController.toString(), "");
-		
-//		System.out.println(splashPaneController);
-		
-//		configurePaneSplash();
-//		displaySplash();
+		initialCleanup();
 		configureControls();
 		dbInit();
-//		startup();
+		startup();
 		configureIO();
 		configureProcessing();
-		startup();
-//		test();
 	}
-/*	
-	private void test() {
-		loadPaneSplash();
-	    System.out.println(splashPaneController.getLabelSplash().getText());
-	    splashPaneController.getLabelSplash().setText("label test");
-	    System.out.println(splashPaneController.getLabelSplash().getText());
-	    splashPaneController.getLabelSplash().setText("label test two");	
+	
+	private void initialCleanup() {
+		
 	}
-*/
+	
 	public void configureControls() {
 		textResult = contentPaneController.getTextResult();
 	    buttonClearSearch = contentPaneController.getButtonClearSearch();
@@ -187,12 +189,17 @@ public class MainPaneController implements Initializable{
 	    lineSeparator = inputPaneController.getLineSeparator();
 	    buttonCatInfo = searchPaneController.getButtonCatInfo();
 	    checkboxInfo = searchPaneController.getCheckboxInfo();
-	    
+	    progressSearch =contentPaneController.getProgressSearch();
 	}
 	
 	public void dbInit() {
 		org.apache.log4j.BasicConfigurator.configure();
-		database = DB.getDB(DB_PATH);
+		String dbPath = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
+		database = Nitrite.builder()
+				.compressed()
+			    .filePath(dbPath)
+			    .openOrCreate("user", "password");
+		Database.databaseInstance = database;
 		chartRepository = database.getRepository(StandardNavigationChart.class);
 		metaRepository = database.getRepository(BaseFileMetadata.class);
 		appDTORepository = database.getRepository(AppDTO.class);
@@ -202,9 +209,11 @@ public class MainPaneController implements Initializable{
 	// Loading data parsed from  snc_catalogue.xml to Nitrite DB (object repository) 
 	// if there is no catalogue loaded in DB
 	public void startup() {
-		if(appDTORepository.find().size() < 1 || chartRepository.size() < 100) {
-			textResult.setText("Wait for the app to finish loading chart database..............");
-			loadDBFromFile(ukhoCatalogueFile, FILE_PATH, DB_PATH);	
+		if(appDTORepository.find().size() < 1 || chartRepository.size() < 3900) {
+			String filePath = FileUtils.readXMLPath(CONFIG_PATH, FILE_PATH);
+			String dbPath = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
+			System.out.println( filePath + ", " + dbPath);
+			loadDBFromFile(ukhoCatalogueFile, filePath, dbPath);	
 		}else {
 			setInfoAfterDBLoaded();
 		}
@@ -273,15 +282,7 @@ public class MainPaneController implements Initializable{
 		buttonSearchChart.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent event) {
-				if(meta == null) {
-					MessageBox.show("The UKHO Standard Navigation ChartUtils catalogue has not been loaded yet.\n"
-							  + "          Load the catalogue first and then search for charts!", "Info");
-					return;
-				}
-				boolean fullInfo = checkboxInfo.isSelected();
-				textResult.clear();
-				String searchInput = textSearchChart.getText().trim();
-				textResult.setText(chartUtils.displayChartRange(searchInput, fullInfo));
+				searchCharts();
 			}
 		});
 		
@@ -289,15 +290,7 @@ public class MainPaneController implements Initializable{
 			@Override
 			public void handle(KeyEvent event) {
 				if(event.getCode().equals(KeyCode.ENTER)) {
-					if(meta == null) {
-						MessageBox.show("The UKHO Standard Navigation ChartUtils catalogue has not been loaded yet.\n"
-								  + "          Load the catalogue first and then search for charts!", "Info");
-						return;
-					}
-					boolean fullInfo = checkboxInfo.isSelected();
-					textResult.clear();
-					String searchInput = textSearchChart.getText().trim();
-					textResult.setText(chartUtils.displayChartRange(searchInput, fullInfo));
+					searchCharts();
 				}
 			}
 		});
@@ -308,42 +301,11 @@ public class MainPaneController implements Initializable{
 	
 	/////////////////////////////////////////////////////////////////////
 	
-/*	
-	private void loadDBFromFile(String filePath) {	
-		textResult.setText("Wait for the app to finish loading chart database..............");
-		Task<UKHOCatalogueFile> fileLoadTask = new FileLoadTask(filePath);
-		
-		fileLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
-				new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent t) {					
-				for(StandardNavigationChart chart : fileLoadTask.getValue().getProducts().getPaper().getCharts()) {
-					chartRepository.insert(chart);
-				}
-				metaRepository.insert(fileLoadTask.getValue().getBaseFileMetadata());
-				AppDTO appDTO = new AppDTO();
-				appDTO.setSchemaVersion(fileLoadTask.getValue().getSchemaVersion());
-				appDTORepository.insert(appDTO);
-				MessageBox.show("Catalogue has been successfully loaded into Database", "Info");
-				}
-			});
-		fileLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
-							new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent t) {
-				textResult.setText("Catalogue not loaded. Please load the file manually \n"
-						+ "or \n"
-						+ "download the latest catalogue file from UKHO website.");
-				}
-			});
-		
-		Thread thread = new Thread(fileLoadTask);
-        thread.setDaemon(true);
-        thread.start();
-	}
-*/
+
 	
 	private void setInfoAfterDBLoaded() {
+//		String dbPath = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
+		database = Database.databaseInstance;
 		metaRepository = database.getRepository(BaseFileMetadata.class);
 		appDTORepository = database.getRepository(AppDTO.class);
 		Cursor<BaseFileMetadata> metaResults = metaRepository.find();
@@ -351,7 +313,6 @@ public class MainPaneController implements Initializable{
 		AppDTO appDTOFound = appDTOResults.firstOrDefault();
 		meta = metaResults.firstOrDefault();
 		schemaVersion = appDTOFound.getSchemaVersion();
-		
 		textResult.setText(Info.catalogueFull(meta, schemaVersion));
 		labelLoadedDate.setText(Info.catalogueBasic(meta, schemaVersion));
 		setDateLabels(meta);
@@ -430,24 +391,35 @@ public class MainPaneController implements Initializable{
 		   }
 	}
 	
-	private UKHOCatalogueFile loadFileFromPath(String FILE_PATH) {
+	private UKHOCatalogueFile loadFileFromPath(String filePath) {
 		File file;
 		UKHOCatalogueFile ukhoCatalogueFile = null;
 		
 		try {
-	       	file = new File(FILE_PATH);
-	        FileInputStream fis = new FileInputStream(file);
-	         
+	       	file = new File(filePath);
+	       	System.out.println("398: " + filePath);
 	        long fileSize = file.length();
 			System.out.println(fileSize);
-				
+			if(fileSize < 1) {
+				textResult.setText("Catalogue and Database files not found. \n\n"
+						+ "Please choose catalogue file manually \n"
+						+ "or download the latest catalogue file from UKHO website.\n\n\n"
+						+ "You may also want to check the config.txt file - it might be incorrectly formed. \r\n" + 
+						"(see APP_FOLDER/user_data/config.txt for information about how to do it correctly)");
+				return ukhoCatalogueFile;
+			}
+			FileInputStream fis = new FileInputStream(file);
 		    JAXBContext jaxbContext;
 			jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		    ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
+		    FileUtils.writeConfig(filePath, DB_PATH);
 		} catch (FileNotFoundException io) {
-			textResult.setText("Catalogue file not found (" + FILE_PATH + "). \n\n"
-					+ "Please load the file manually or download the latest catalogue file from UKHO website.");
+			textResult.setText("Catalogue and Database files not found. \n\n"
+					+ "Please choose catalogue file manually \n"
+					+ "or download the latest catalogue file from UKHO website.\n\n\n"
+					+ "You may also want to check the config.txt file - it might be incorrectly formed. \r\n" + 
+					"(see APP_FOLDER/user_data/config.txt for information about how to do it correctly)");
 			io.printStackTrace();
 		} catch (JAXBException e) {
 			MessageBox.show("Parsing from XML format failed (file corrupted or not in correct format)", "Error");
@@ -456,49 +428,165 @@ public class MainPaneController implements Initializable{
 
         return ukhoCatalogueFile;
 	}
+
 	
-	private void loadDBFromFile(UKHOCatalogueFile ukhoCatalogueFile, String filePath, String dbPath) {
-		
+	private Nitrite loadDBFromFile(UKHOCatalogueFile ukhoCatalogueFile, String filePath, String dbPath) {
+		database.close();
 		ukhoCatalogueFile = loadFileFromPath(filePath);
-		dbLoaderTask = new DBLoaderTask(ukhoCatalogueFile, dbPath);
-		loadPaneSplash();
-		splashPaneController.getProgressSplash().progressProperty().unbind();
-		splashPaneController.getProgressSplash().setStyle(" -fx-progress-color: blue;");
-    	splashPaneController.getProgressSplash().progressProperty().bind(dbLoaderTask.progressProperty());
-    	splashPaneController.getLabelSplash().textProperty().bind(dbLoaderTask.messageProperty());
-    	
-    	splashPaneController.getButtonSplash().setOnAction(new EventHandler<ActionEvent>(){
-			@Override
-			public void handle(ActionEvent event) {
-				Stage stage = (Stage) splashPaneController.getButtonSplash().getScene().getWindow();
-				stage.close();
+		if(ukhoCatalogueFile != null) {
+			final String catalogueDate = ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp();
+			localDateTime = LocalDateTime.now();
+			String loadDate = localDateTime.format(formatter);
+			String dbPathNew = "user_data/snc_catalogue_date_" + 
+						catalogueDate + "_loaded_on_" + 
+						loadDate + ".db";
+			textResult.setText("Database file not found. Creating database and saving it as:\n" + 
+								"                     " + dbPathNew + 
+								"\n\nand loading up chart collection from:\n" + 
+								"                     " + filePath + 
+								"\n");
+						
+			dbLoaderTask = new DBLoaderTask(ukhoCatalogueFile, dbPathNew);
+			loadPaneSplash();
+			splashPaneController.getProgressSplash().progressProperty().unbind();
+			splashPaneController.getProgressSplash().setStyle(" -fx-progress-color: cornflowerblue;");
+	    	splashPaneController.getProgressSplash().progressProperty().bind(dbLoaderTask.progressProperty());
+	    	splashPaneController.getLabelSplash().textProperty().bind(dbLoaderTask.messageProperty());
+	    	
+	    	splashPaneController.getButtonSplash().setOnAction(new EventHandler<ActionEvent>(){
+				@Override
+				public void handle(ActionEvent event) {
+/*					textResult.setText(dbLoaderTask.messageProperty().getValue().toString()
+							+ "\n\nLoading charts from an XML catalogue into the Database has been interrupted.\n"
+							+ "Load the XML catalogue manually or restart the SncXmlReader to try again.\n"
+							+ "If you do not have an XML catalogue file please download it form the UKHO website.\n");
+*/					splashPaneController.getButtonSplash().setText("Close Window");
+					dbLoaderTask.cancel();					
+					Stage stage = (Stage) splashPaneController.getButtonSplash().getScene().getWindow();
+					stage.close();
+					}
+			});
+		
+			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+					new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent t) {
+					Nitrite database = dbLoaderTask.getValue();
+					setDatabase(database);
+					Database.databaseInstance = database;
+					DB_PATH = dbPathNew;
+					System.out.println(database.getContext().toString());
+					chartRepository = database.getRepository(StandardNavigationChart.class);
+					metaRepository = database.getRepository(BaseFileMetadata.class);
+					appDTORepository = database.getRepository(AppDTO.class);
+					System.out.println("NEW - appDTORepository.find().size(): " + appDTORepository.find().size());
+					splashPaneController.getProgressSplash().progressProperty().unbind();	
+					splashPaneController.getLabelSplash().textProperty().unbind();
+					splashPaneController.getLabelSplash().setText("Databse updated.");
+					splashPaneController.getButtonSplash().setText("Close Info.");
+					setInfoAfterDBLoaded();
+					System.out.println("DB_PATH: " + DB_PATH);
+					System.out.println("dbPathNew: " + dbPathNew);
+					FileUtils.writeConfig(filePath, dbPathNew);
+					}
+				});
+			
+			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_CANCELLED, 
+					new EventHandler<WorkerStateEvent>() {
+					@Override
+					public void handle(WorkerStateEvent t) {
+						database.close();
+						textResult.setText(dbLoaderTask.messageProperty().getValue().toString()
+								+ "\n\nLoading charts from an XML catalogue into the Database has been interrupted.\n"
+								+ "Load the XML catalogue manually or restart the SncXmlReader to try again.\n"
+								+ "If you do not have an XML catalogue file please download it form the UKHO website.\n");
+						splashPaneController.getButtonSplash().setText("Close Window");
+				//		FileUtils.writeConfig(filePath, DB_PATH);
+					}
+				});
+			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+								new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent t) {
+					database.close();
+					textResult.setText("\n\nLoading charts from an XML catalogue into the Database has been interrupted.\n"
+							+ "Load the XML catalogue manually or restart the SncXmlReader to try again.\n"
+							+ "If you do not have an XML catalogue file please download it form the UKHO website.\n");
+					splashPaneController.getButtonSplash().setText("Close Window");
+					FileUtils.writeConfig(filePath, DB_PATH);
 				}
-		});
+			});
+			
+			Thread thread = new Thread(dbLoaderTask);
+	        thread.setDaemon(true);
+	        thread.start();
+		} else {
+//			MessageBox.show("No catalogue and database files found, please check config.txt for details.\n"
+//					+ "Follow instructions in config.txt file or download a new catalogue file from UKHO website.", "Info");
+		}
+		return database;
+	}
 	
-		dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+	private String copyDB(Nitrite database, String dbPath) {
+		Nitrite db = Nitrite.builder()
+			    .compressed()
+			    .filePath(dbPath)
+			    .openOrCreate();
+		
+		ObjectRepository<StandardNavigationChart> chartRepository = database.getRepository(StandardNavigationChart.class);
+		ObjectRepository<BaseFileMetadata>metaRepository = database.getRepository(BaseFileMetadata.class);
+		ObjectRepository<AppDTO> appDTORepository = database.getRepository(AppDTO.class);
+		
+		ObjectRepository<StandardNavigationChart> chartRepositoryCopy = db.getRepository(StandardNavigationChart.class);
+		ObjectRepository<BaseFileMetadata>metaRepositoryCopy = db.getRepository(BaseFileMetadata.class);
+		ObjectRepository<AppDTO> appDTORepositoryCopy = db.getRepository(AppDTO.class);
+		
+		chartRepositoryCopy = chartRepository;
+		metaRepositoryCopy = metaRepository;
+		appDTORepositoryCopy = appDTORepository;
+		
+		System.out.println("db copy: " + chartRepositoryCopy.size() + ", " + metaRepositoryCopy.size() + ", " + appDTORepositoryCopy.size());
+		System.out.println("db copy file: " + db.getContext().getFilePath());
+		db.commit();
+		
+		return db.getContext().getFilePath();
+	}
+	
+	private void searchCharts() {
+		if(meta == null) {
+			MessageBox.show("The UKHO Standard Navigation ChartUtils catalogue has not been loaded yet.\n"
+					  + "          Load the catalogue first and then search for charts!", "Info");
+			return;
+		}
+		boolean fullInfo = checkboxInfo.isSelected();
+		textResult.clear();
+		String searchInput = textSearchChart.getText().trim();
+		chartSearchTask = new ChartSearchTask(database, searchInput, fullInfo);
+		
+		// same as chartSearchTask but on the main app thread		
+//		textResult.setText(chartUtils.displayChartRange(DB_PATH, searchInput, fullInfo)); 
+		
+		textResult.textProperty().bind(chartSearchTask.messageProperty());
+		progressSearch.progressProperty().bind(chartSearchTask.progressProperty());
+		
+		chartSearchTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
 				new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
-				splashPaneController.getProgressSplash().progressProperty().unbind();	
-				splashPaneController.getLabelSplash().textProperty().unbind();
-				splashPaneController.getLabelSplash().setText("Databse updated.");
-				splashPaneController.getButtonSplash().setText("Close window.");
-				setInfoAfterDBLoaded();
+				textResult.textProperty().unbind();
+				String chartSearchResult = chartSearchTask.getValue().toString();
+				textResult.setText(chartSearchResult);
 				}
 			});
-		dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+		chartSearchTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
 							new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent t) {
-				database.getRepository(StandardNavigationChart.class).drop();
-				database.getRepository(BaseFileMetadata.class).drop();
-				database.getRepository(AppDTO.class).drop();
-				database.close();
-				textResult.setText("Catalogue not loaded.");
+				
 			}
 		});
 		
-		Thread thread = new Thread(dbLoaderTask);
+		Thread thread = new Thread(chartSearchTask);
         thread.setDaemon(true);
         thread.start();
 	}

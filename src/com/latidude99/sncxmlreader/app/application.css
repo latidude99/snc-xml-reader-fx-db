@@ -1,1 +1,8 @@
-/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+.progress-bar .bar {-fx-padding:2px; -fx-background-insets:0; -fx-progress-color: lavender; -fx-background-color: fuchsia;}
+
+.progress-indicator .spinner {
+    /** Applying to undo styling from .spinner, reported in RT-37965 */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}

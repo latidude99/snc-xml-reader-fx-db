@@ -38,7 +38,7 @@
  
             <HBox alignment="TOP_RIGHT" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.latidude99.sncxmlreader.controller.SearchPaneController">
                <children>
-                  <Button id="button-cat-info" fx:id="buttonCatInfo" contentDisplay="CENTER" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" prefWidth="100.0" text="Catalogue Info" HBox.hgrow="ALWAYS">
+                  <Button id="button-cat-info" fx:id="buttonCatInfo" contentDisplay="CENTER" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" prefWidth="150.0" text="Update Catalogue Info" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets right="15.0" />
                      </HBox.margin>
@@ -48,11 +48,11 @@
                         <Insets left="5.0" right="10.0" top="5.0" />
                      </HBox.margin>
                   </CheckBox>
-                  <TextField id="text-search-chart" fx:id="textSearchChart" prefHeight="25.0" prefWidth="295.0" promptText="search by chart numbers (1017, 2453, 4000-4006)">
+                  <TextField id="text-search-chart" fx:id="textSearchChart" prefHeight="25.0" prefWidth="275.0" promptText="search by chart numbers (1017, 2453, 4000-4006)">
                      <HBox.margin>
                         <Insets left="10.0" />
                      </HBox.margin></TextField>
-                  <Button fx:id="buttonSearchChart" mnemonicParsing="false" prefHeight="25.0" prefWidth="166.0" text="Search Charts" textFill="#331596">
+                  <Button fx:id="buttonSearchChart" mnemonicParsing="false" prefHeight="25.0" prefWidth="136.0" text="Search Charts" textFill="#331596">
                      <HBox.margin>
                         <Insets left="10.0" />
                      </HBox.margin>

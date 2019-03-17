@@ -88,7 +88,8 @@ public class CataloguePaneController implements Initializable{
 			        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/latidude99/sncxmlreader/pane/webPane.fxml"));
 			        Parent root1 = (Parent) fxmlLoader.load();
 			        Stage stage = new Stage();
-			        stage.setScene(new Scene(root1));  
+			        stage.setScene(new Scene(root1));
+			        stage.setResizable(false);
 			        stage.show();
 			    } catch(Exception e) {
 			        e.printStackTrace();

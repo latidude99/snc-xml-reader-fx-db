@@ -31,8 +31,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" 
-			fx:controller="com.latidude99.sncxmlreader.controller.InputPaneController">
+<VBox xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.latidude99.sncxmlreader.controller.InputPaneController">
       	<children>
             <HBox prefHeight="30.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
                <children>
@@ -57,7 +56,7 @@
                      </HBox.margin></Label>
                </children>
             </HBox>
-            <HBox prefHeight="10.0" prefWidth="200.0">
+            <HBox prefHeight="10.0">
                <children>
                   <Line id="line-separator" fx:id="lineSeparator" endX="680.0" opacity="0.5" stroke="#8a8a8a" strokeLineCap="ROUND">
                      <HBox.margin>
@@ -90,7 +89,7 @@
                         <Insets left="10.0" right="10.0" />
                      </HBox.margin>
                   </Button>
-                  <TextField id="path-save-result" fx:id="pathSaveResult" prefWidth="500.0" HBox.hgrow="ALWAYS">
+                  <TextField id="path-save-result" fx:id="pathSaveResult" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets right="10.0" />
                      </HBox.margin>

@@ -17,7 +17,7 @@ import javafx.event.EventHandler;
 public class DBLoader {
 	
 	public static void loadDBFromFile(String filePath) {	
-		Nitrite database = DB.getDB(filePath);
+		Nitrite database = Database.getDatabaseInstance(filePath);
 		ObjectRepository<StandardNavigationChart> chartRepository = database.getRepository(StandardNavigationChart.class);
 		ObjectRepository<BaseFileMetadata>metaRepository = database.getRepository(BaseFileMetadata.class);
 		ObjectRepository<AppDTO> appDTORepository = database.getRepository(AppDTO.class);

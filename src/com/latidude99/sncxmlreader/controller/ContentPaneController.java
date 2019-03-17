@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import javafx.fxml.Initializable;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 
 
@@ -34,9 +35,13 @@ public class ContentPaneController implements Initializable{
     private TextArea textResult;
     @FXML
     private Button buttonClearSearch;
+    @FXML
+    private ProgressBar progressSearch;
     
     
-  
+    public ProgressBar getProgressSearch() {
+    	return progressSearch;
+    }
 	public TextArea getTextResult() {
 		return textResult;
 	}

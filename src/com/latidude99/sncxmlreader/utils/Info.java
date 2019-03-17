@@ -4,12 +4,13 @@ import com.latidude99.sncxmlreader.model.BaseFileMetadata;
 import com.latidude99.sncxmlreader.model.ContactInfo;
 
 public class Info {
+	public static final String APP_VERSION = "version 1.3";
 	public static String CATALOGUE_INFO_FULL;
 	
 	
 	public static String about() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Standard Navigation ChartUtils XML Reader (SncXmlReader) v.0.7 beta\r\n");
+		sb.append("Standard Navigation ChartUtils XML Reader (SncXmlReader) " + Info.APP_VERSION + "\r\n");
 		sb.append("--------------------------------------------------------------------------\r\n\n");
 		sb.append("The goal of SncXmlReader is to present a UKHO Standard Navigation ChartUtils catalogue\r\n"
 				+ "(available for registered eNavigator users to download in XML file format) \r\n"
