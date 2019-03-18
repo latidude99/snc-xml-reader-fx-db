@@ -1,8 +1,10 @@
 package com.latidude99.sncxmlreader.utils;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.dizitart.no2.objects.ObjectRepository;
 import org.dizitart.no2.objects.filters.ObjectFilters;
@@ -77,7 +79,14 @@ public class ChartUtils {
 		System.out.println(database.toString());
 		chartRepository = database.getRepository(StandardNavigationChart.class);		
 		Map<String, StandardNavigationChart> chartsFound = new TreeMap<>();   
-				
+		
+/*		chartsFound = numbersSearched.parallelStream()
+									 .filter(c -> 
+									 	chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault() != null)
+									 .collect(
+											 Collectors.toMap(c -> c, c ->chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault()));
+		
+*/		
         for(String searchNum : numbersSearched) {
         	StandardNavigationChart chart = null;
         	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
@@ -85,7 +94,8 @@ public class ChartUtils {
         	if(chart != null)
         		chartsFound.put(searchNum, chart);	
         }
-        return chartsFound;
+
+		return chartsFound;
 	}
 	
 	private String printSearchSummary(Map<String, StandardNavigationChart> chartsFound, Set<String> numbersSearched) {
