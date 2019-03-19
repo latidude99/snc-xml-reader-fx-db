@@ -18,87 +18,8 @@ import com.latidude99.sncxmlreader.model.Position;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 
 public class ChartUtils {
-	Nitrite database;
-	ObjectRepository<StandardNavigationChart> chartRepository;
 	
-
-/*
-	private static UKHOCatalogueFile ukhoCatalogueFile;
-	
-	public static UKHOCatalogueFile getUkhoCatalogueFile() {
-		System.out.println("Getting ukhoCatalogueFile, schema version " + ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp());
-		return ukhoCatalogueFile;
-	}
-	public static void setUkhoCatalogueFile(UKHOCatalogueFile catalogue) {
-		System.out.println("Setting ukhoCatalogueFile, schema version " + catalogue.getBaseFileMetadata().getMD_DateStamp());
-		ukhoCatalogueFile = catalogue;
-	}
-
-	public static Map<String, StandardNavigationChart> getCharts(){
-		Map<String, StandardNavigationChart> charts = new TreeMap<String, StandardNavigationChart>();
-		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts())
-			charts.put(chart.getMetadata().getCatalogueNumber(), chart);
-		
-		return charts;
-	}
-	
-	public Map<String, StandardNavigationChart> getCharts(UKHOCatalogueFile ukhoCatalogueFile){
-		Map<String, StandardNavigationChart> charts = new TreeMap<String, StandardNavigationChart>();
-		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts())
-			charts.put(chart.getMetadata().getCatalogueNumber(), chart);
-		
-		return charts;
-	}
-	
-*/		
-	public String displayChartRange(String dbPath, String input, boolean fullInfo) {
-		StringBuilder sb = new StringBuilder();
-		Set<String> numbersSearched = FormatUtils.parseInput(input);
-		System.out.println(numbersSearched);
-		Map<String, StandardNavigationChart> chartsFound = findChartsFromRepository(dbPath, numbersSearched);
-        
-		sb.append(printSearchSummary(chartsFound, numbersSearched));
-		
-        if(!chartsFound.keySet().isEmpty()) {
-        	for(StandardNavigationChart chart : chartsFound.values()) {
-        		if(fullInfo)
-        			sb.append(displayChartFullInfo(chart));
-				else
-					sb.append(displayChartBasicInfo(chart));
-        	}
-        } else {
-			sb.append("\nNo charts have been found"); 
-        }
-        return sb.toString();
-	}
-	
-	
-	
-	private Map<String, StandardNavigationChart> findChartsFromRepository(String dbPath, Set<String> numbersSearched){
-		database = Database.getDatabaseInstance(dbPath);
-		System.out.println(database.toString());
-		chartRepository = database.getRepository(StandardNavigationChart.class);		
-		Map<String, StandardNavigationChart> chartsFound = new TreeMap<>();   
-		
-/*		chartsFound = numbersSearched.parallelStream()
-									 .filter(c -> 
-									 	chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault() != null)
-									 .collect(
-											 Collectors.toMap(c -> c, c ->chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault()));
-		
-*/		
-        for(String searchNum : numbersSearched) {
-        	StandardNavigationChart chart = null;
-        	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
-        	System.out.println("chart: " + chart);
-        	if(chart != null)
-        		chartsFound.put(searchNum, chart);	
-        }
-
-		return chartsFound;
-	}
-	
-	private String printSearchSummary(Map<String, StandardNavigationChart> chartsFound, Set<String> numbersSearched) {
+	public String printSearchSummary(Map<String, StandardNavigationChart> chartsFound, Set<String> numbersSearched) {
 		StringBuilder sb = new StringBuilder();
         String chartsEntered = " chart";
         String chartsListed = " chart";
@@ -106,7 +27,7 @@ public class ChartUtils {
         	chartsEntered = " charts";
         if(chartsFound.keySet().size() > 1)
         	chartsListed = " charts";
-        sb.append("Searching for " + numbersSearched.size() + chartsEntered + "\n");
+        sb.append("Searched for " + numbersSearched.size() + chartsEntered + "\n");
         sb.append(FormatUtils.printSet20Cols(numbersSearched));
         sb.append("\n");
         sb.append("\nFound " + chartsFound.keySet().size() + chartsListed + "\n");
@@ -116,7 +37,7 @@ public class ChartUtils {
 	}
 	
 	
-	private String displayChartBasicInfo(StandardNavigationChart chart) {
+	public String displayChartBasicInfo(StandardNavigationChart chart) {
 		Metadata meta = chart.getMetadata();
       	StringBuilder sb = new StringBuilder();
       	
@@ -125,7 +46,7 @@ public class ChartUtils {
         return sb.toString();
 	}
 	
-	private String displayChartFullInfo(StandardNavigationChart chart) {
+	public String displayChartFullInfo(StandardNavigationChart chart) {
 		Metadata meta = chart.getMetadata();
       	StringBuilder sb = new StringBuilder();
       	
@@ -137,7 +58,7 @@ public class ChartUtils {
         return sb.toString();
 	}
 	
-	private String printChartMainInfo(Metadata meta) {
+	public String printChartMainInfo(Metadata meta) {
 		String international = "";
 		StringBuilder sb = new StringBuilder();
 		sb.append("\n\nChart Number: " + meta.getCatalogueNumber());
@@ -156,7 +77,7 @@ public class ChartUtils {
 	}
 	
 	
-	private String printChartGeographicLimits(Metadata meta) {
+	public String printChartGeographicLimits(Metadata meta) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("");
 		if(meta.getGeographicLimit() != null && meta.getGeographicLimit().getPolygons() != null) {
@@ -171,7 +92,7 @@ public class ChartUtils {
 		return sb.toString();
 	}
 	
-	private String printChartPanelsShort(Metadata meta) {
+	public String printChartPanelsShort(Metadata meta) {
 		StringBuilder sb = new StringBuilder();
 		String additionalPanels = "none";
       	if(meta.getPanels() != null && meta.getPanels().size() > 1) {
@@ -189,7 +110,7 @@ public class ChartUtils {
         return sb.toString();
 	}
 	
-	private String printChartPanelsLong(Metadata meta) {
+	public String printChartPanelsLong(Metadata meta) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("");
 		if(meta.getPanels() != null && meta.getPanels().size() >1) {
@@ -214,7 +135,7 @@ public class ChartUtils {
 		
 	}
 	
-	private String printChartNotices(Metadata meta) {
+	public String printChartNotices(Metadata meta) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("");
 		if(meta.getNotices() != null) {
@@ -228,13 +149,6 @@ public class ChartUtils {
         sb.append("\n=================================================");
         return sb.toString();
 	}
-	
-	
-	
-	
-	
-	
-
 }
 
 

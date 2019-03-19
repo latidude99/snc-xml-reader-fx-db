@@ -105,9 +105,9 @@ public class FileUtils {
 							 "\r\n" + 
 							 "\r\n" + 
 							 "\r\n" + 
-							 "# Please do not leave uncommented lines (without \'#\' character in front \r\n"
-							 + "the software will attempt to read files names \r\n"
-							 + "from the first uncommented line (other than a blank line)!"; 
+							 "# Please do not leave uncommented lines (without \'#\' character in front) \r\n" +
+							 "# the software will attempt to read files names \r\n" +
+							 "# from the uncommented lines (other than a blank line)!"; 
 
 			fw = new FileWriter(CONFIG_PATH);
 			bw = new BufferedWriter(fw);
@@ -160,9 +160,9 @@ public class FileUtils {
 					 "\r\n" + 
 					 "\r\n" + 
 					 "\r\n" + 
-					 "# Please do not leave uncommented lines (without \'#\' character in front \r\n"
-					 + "the software will attempt to read files names \r\n"
-					 + "from the first uncommented line (other than a blank line)!"; 
+					 "# Please do not leave uncommented lines (without \'#\' character in front) \r\n" +
+					 "# the software will attempt to read files names \r\n" +
+					 "# from the uncommented lines (other than a blank line)!"; 
 
 			fw = new FileWriter(configPath);
 			bw = new BufferedWriter(fw);
@@ -214,9 +214,9 @@ public class FileUtils {
 					 "\r\n" + 
 					 "\r\n" + 
 					 "\r\n" + 
-					 "# Please do not leave uncommented lines (without \'#\' character in front \r\n"
-					 + "the software will attempt to read files names \r\n"
-					 + "from the first uncommented line (other than a blank line)!"; 
+					 "# Please do not leave uncommented lines (without \'#\' character in front) \r\n" +
+					 "# the software will attempt to read files names \r\n" +
+					 "# from the uncommented lines (other than a blank line)!"; 
 
 			fw = new FileWriter(configPath);
 			bw = new BufferedWriter(fw);

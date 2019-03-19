@@ -62,7 +62,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class WebPaneController implements Initializable{
-	public static String CONFIG_PATH = "user_data/config.txt";
+	public static String CONFIG_PATH = "user_data/config.properties";
 	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
 	public final String UKHO_HOME = "https://enavigator.ukho.gov.uk/";

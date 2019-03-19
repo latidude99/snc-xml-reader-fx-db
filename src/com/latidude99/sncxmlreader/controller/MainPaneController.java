@@ -52,7 +52,6 @@ import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.FormatUtils;
 import com.latidude99.sncxmlreader.utils.Info;
 import com.latidude99.sncxmlreader.utils.MessageBox;
-import com.latidude99.sncxmlreader.db.DBLoader;
 import com.latidude99.sncxmlreader.db.DBLoaderTask;
 import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.AppDTO;
@@ -97,7 +96,6 @@ public class MainPaneController implements Initializable{
     ObjectRepository<AppDTO> appDTORepository;
     Nitrite database;
     FileLoadTask fileLoadTask;
-    DBLoader dbLoader;
     DBLoaderTask dbLoaderTask;
     public void setDatabase(Nitrite database) {
     	this.database = database;
@@ -263,7 +261,7 @@ public class MainPaneController implements Initializable{
 				if(meta != null && schemaVersion != null) {
 					setInfoAfterDBLoaded();	
 				} else {
-					MessageBox.show("The UKHO Standard Navigation ChartUtils catalogue has not been loaded yet.", "Info");
+					MessageBox.show("The UKHO Standard Navigation ChartUtils_old catalogue has not been loaded yet.", "Info");
 				}				
 			}
 		});	
@@ -504,16 +502,8 @@ public class MainPaneController implements Initializable{
 				//		FileUtils.writeConfig(filePath, DB_PATH);
 					}
 				});
-			
-			dbLoaderTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
-			    @Override
-			    public void handle(WorkerStateEvent arg0) {
-			        Throwable throwable = dbLoaderTask.getException(); 
-			        throwable.printStackTrace();
-			    }
-			});
-			
-/*			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+						
+			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
 								new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent t) {
@@ -523,9 +513,10 @@ public class MainPaneController implements Initializable{
 							+ "If you do not have an XML catalogue file please download it form the UKHO website.\n");
 					splashPaneController.getButtonSplash().setText("Close Window");
 					FileUtils.writeConfig(filePath, DB_PATH);
+//					dbLoaderTask.getException().printStackTrace();
 				}
 			});
-*/			
+			
 			Thread thread = new Thread(dbLoaderTask);
 	        thread.setDaemon(true);
 	        thread.start();
@@ -535,35 +526,10 @@ public class MainPaneController implements Initializable{
 		}
 		return database;
 	}
-	
-	private String copyDB(Nitrite database, String dbPath) {
-		Nitrite db = Nitrite.builder()
-			    .compressed()
-			    .filePath(dbPath)
-			    .openOrCreate();
 		
-		ObjectRepository<StandardNavigationChart> chartRepository = database.getRepository(StandardNavigationChart.class);
-		ObjectRepository<BaseFileMetadata>metaRepository = database.getRepository(BaseFileMetadata.class);
-		ObjectRepository<AppDTO> appDTORepository = database.getRepository(AppDTO.class);
-		
-		ObjectRepository<StandardNavigationChart> chartRepositoryCopy = db.getRepository(StandardNavigationChart.class);
-		ObjectRepository<BaseFileMetadata>metaRepositoryCopy = db.getRepository(BaseFileMetadata.class);
-		ObjectRepository<AppDTO> appDTORepositoryCopy = db.getRepository(AppDTO.class);
-		
-		chartRepositoryCopy = chartRepository;
-		metaRepositoryCopy = metaRepository;
-		appDTORepositoryCopy = appDTORepository;
-		
-		System.out.println("db copy: " + chartRepositoryCopy.size() + ", " + metaRepositoryCopy.size() + ", " + appDTORepositoryCopy.size());
-		System.out.println("db copy file: " + db.getContext().getFilePath());
-		db.commit();
-		
-		return db.getContext().getFilePath();
-	}
-	
 	private void searchCharts() {
 		if(meta == null) {
-			MessageBox.show("The UKHO Standard Navigation ChartUtils catalogue has not been loaded yet.\n"
+			MessageBox.show("The UKHO Standard Navigation ChartUtils_old catalogue has not been loaded yet.\n"
 					  + "          Load the catalogue first and then search for charts!", "Info");
 			return;
 		}

@@ -40,8 +40,6 @@ public class DBLoaderTask extends Task<Nitrite> {
 				
 		long totalChartsNum = ukhoCatalogueFile.getProducts().getPaper().getCharts().size();
 		
-		
-		
 		List<StandardNavigationChart> charts = ukhoCatalogueFile.getProducts().getPaper().getCharts();
 		charts.parallelStream()
 				.forEach(c -> {chartRepository.insert(c);
@@ -51,8 +49,8 @@ public class DBLoaderTask extends Task<Nitrite> {
 								System.out.println(c.getShortName());
 				});
 		
-		
-/*		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts()) {
+/*		
+		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts()) {
 			 if (this.isCancelled()) {
 				 this.updateMessage("Loading database stopped, loaded:  " + loadedChartsNum + " of " + totalChartsNum + " charts");
 	             break;

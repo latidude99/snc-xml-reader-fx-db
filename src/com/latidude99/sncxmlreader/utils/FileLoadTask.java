@@ -22,22 +22,8 @@ public class FileLoadTask extends Task<UKHOCatalogueFile> {
 
     @Override
     protected UKHOCatalogueFile call() throws Exception {
-
-        try {
-        	file = new File(fileName);
-            FileInputStream fis = new FileInputStream(file);
-           
-			long fileSize = file.length();
-			System.out.println(fileSize);
-			
-	        JAXBContext jaxbContext;
-			jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
-			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-	        ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
-
+    	
+    	ukhoCatalogueFile = XMLFileParser.parse(fileName);
         return ukhoCatalogueFile;
     }
 

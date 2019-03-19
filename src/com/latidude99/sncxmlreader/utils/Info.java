@@ -10,9 +10,9 @@ public class Info {
 	
 	public static String about() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Standard Navigation ChartUtils XML Reader (SncXmlReader) " + Info.APP_VERSION + "\r\n");
+		sb.append("Standard Navigation ChartUtils_old XML Reader (SncXmlReader) " + Info.APP_VERSION + "\r\n");
 		sb.append("--------------------------------------------------------------------------\r\n\n");
-		sb.append("The goal of SncXmlReader is to present a UKHO Standard Navigation ChartUtils catalogue\r\n"
+		sb.append("The goal of SncXmlReader is to present a UKHO Standard Navigation ChartUtils_old catalogue\r\n"
 				+ "(available for registered eNavigator users to download in XML file format) \r\n"
 				+ "in a more user friendly way. SncXmlReader allows simple search for charts \r\n"
 				+ "using their official catalogue number.\r\n"
@@ -51,7 +51,7 @@ public class Info {
 	
 	public static String help() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Standard Navigation ChartUtils XML Reader \r\n");
+		sb.append("Standard Navigation ChartUtils_old XML Reader \r\n");
 		sb.append("-------------------------------------------------------------------------------------------------------------------------------\r\n");
 		sb.append("To use ScnXmlReader you need to download a UKHO SNC catalogue file first and save it on your computer/network drive, \r\n"
 				+ "optimally in the ScnXmlReader folder.\r\n");
@@ -102,7 +102,7 @@ public class Info {
 		sb.append("        Phone: " + contact.getPhone() + "\n");
 		sb.append("        Email: " + contact.getAddress().getElectronicMailAddress() + "\n\n");
 		sb.append("Address: " + contact.getAddress() + "\n");
-		sb.append("================================================= \n");
+		sb.append(" \n");
 		
 		CATALOGUE_INFO_FULL = sb.toString();
 		
