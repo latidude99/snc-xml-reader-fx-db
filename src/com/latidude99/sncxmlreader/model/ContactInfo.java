@@ -6,15 +6,37 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
 @XmlRootElement(name = "contactInfo")
 @XmlType(propOrder={"fax", "phone", "address"})
-public class ContactInfo implements Serializable{
+public class ContactInfo implements Serializable, Mappable{
 	private static final long serialVersionUID = -2207800331547888470L;
 
 	String fax;
 	String phone;
 	Address address;
 	
+	@Override
+	public Document write(NitriteMapper mapper) {
+	    Document document = new Document();
+	    document.put("fax", getFax());
+	    document.put("phone", getPhone());
+	    document.put("address", getAddress());
+	     
+	    return document;
+	}
+
+	@Override
+	public void read(NitriteMapper mapper, Document document) {
+	    if (document != null) {
+	        setFax((String) document.get("fax"));
+	        setPhone((String) document.get("phone"));
+	        setAddress((Address) document.get("address"));
+	    }
+	}	
 	public String getFax() {
 		return fax;
 	}

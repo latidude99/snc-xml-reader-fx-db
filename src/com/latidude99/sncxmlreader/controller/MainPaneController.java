@@ -87,7 +87,7 @@ import javafx.stage.StageStyle;
 
 
 public class MainPaneController implements Initializable{
-	private static final String CONFIG_PATH = "user_data/config.txt";
+	private static final String CONFIG_PATH = "user_data/config.properties";
 	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
@@ -504,7 +504,16 @@ public class MainPaneController implements Initializable{
 				//		FileUtils.writeConfig(filePath, DB_PATH);
 					}
 				});
-			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+			
+			dbLoaderTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			    @Override
+			    public void handle(WorkerStateEvent arg0) {
+			        Throwable throwable = dbLoaderTask.getException(); 
+			        throwable.printStackTrace();
+			    }
+			});
+			
+/*			dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
 								new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent t) {
@@ -516,7 +525,7 @@ public class MainPaneController implements Initializable{
 					FileUtils.writeConfig(filePath, DB_PATH);
 				}
 			});
-			
+*/			
 			Thread thread = new Thread(dbLoaderTask);
 	        thread.setDaemon(true);
 	        thread.start();

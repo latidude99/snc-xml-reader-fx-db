@@ -6,15 +6,40 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
 @XmlRootElement(name = "BaseFileMetadata")
 @XmlType(propOrder={"MD_FileIdentifier", "MD_CharacterSet", "MD_PointOfContact", "MD_DateStamp"})
-public class BaseFileMetadata implements Serializable{
+public class BaseFileMetadata implements Serializable, Mappable{
 	private static final long serialVersionUID = 9128827583565489660L;
 
 	String mD_FileIdentifier;
 	String mD_CharacterSet;
 	MD_PointOfContact mD_PointOfContact;
 	String mD_DateStamp;
+	
+	@Override
+	public Document write(NitriteMapper mapper) {
+	    Document document = new Document();
+	    document.put("mD_FileIdentifier", getMD_FileIdentifier());
+	    document.put("mD_CharacterSet", getMD_CharacterSet());
+	    document.put("mD_PointOfContact", getMD_PointOfContact());
+	    document.put("mD_DateStamp", getMD_DateStamp());
+	     
+	    return document;
+	}
+
+	@Override
+	public void read(NitriteMapper mapper, Document document) {
+	    if (document != null) {
+	        setMD_FileIdentifier((String) document.get("mD_FileIdentifier"));
+	        setMD_CharacterSet((String) document.get("mD_CharacterSet"));
+	        setMD_PointOfContact((MD_PointOfContact) document.get("mD_PointOfContact"));
+	        setMD_DateStamp((String) document.get("mD_DateStamp"));
+	    }
+	}	
 
 	
 	public String getMD_FileIdentifier() {

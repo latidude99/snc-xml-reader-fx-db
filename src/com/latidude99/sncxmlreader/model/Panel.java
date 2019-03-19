@@ -5,8 +5,12 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
 @XmlRootElement(name = "Paper")
-public class Panel implements Serializable{
+public class Panel implements Serializable, Mappable{
 	private static final long serialVersionUID = -833859172140530569L;
 
 	String panelID;
@@ -14,6 +18,29 @@ public class Panel implements Serializable{
  	String panelName;
  	String panelScale;
  	Polygon polygon;
+ 	
+ 	@Override
+ 	public Document write(NitriteMapper mapper) {
+ 	    Document document = new Document();
+ 	    document.put("panelID", getPanelID());
+ 	    document.put("panelAreaName", getPanelAreaName());
+ 	    document.put("panelName", getPanelName());
+ 	    document.put("panelScale", getPanelScale());
+ 	    document.put("polygon", getPolygon());
+ 	     
+ 	    return document;
+ 	}
+
+ 	@Override
+ 	public void read(NitriteMapper mapper, Document document) {
+ 	    if (document != null) {
+ 	        setPanelID((String) document.get("panelID"));
+ 	        setPanelAreaName((String) document.get("panelAreaName"));
+ 	        setPanelName((String) document.get("panelName"));
+ 	        setPanelScale((String) document.get("panelScale"));
+ 	        setPolygon((Polygon) document.get("polygon"));
+ 	    }
+ 	}	
  	
  	public Panel() {}
  	 	

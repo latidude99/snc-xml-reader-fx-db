@@ -7,9 +7,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
 @XmlRootElement(name = "address")
 @XmlType(propOrder={"deliveryPoint", "city", "administrativeArea", "postalCode", "country", "electronicMailAddress"})
-public class Address implements Serializable{
+public class Address implements Serializable, Mappable{
 	private static final long serialVersionUID = 1706674944343606484L;
 
 	String deliveryPoint;
@@ -18,6 +22,31 @@ public class Address implements Serializable{
 	String postalCode;
 	String country;
 	String electronicMailAddress;
+	
+	@Override
+	public Document write(NitriteMapper mapper) {
+	    Document document = new Document();
+	    document.put("deliveryPoint", getDeliveryPoint());
+	    document.put("city", getCity());
+	    document.put("administrativeArea", getAdministrativeArea());
+	    document.put("postalCode", getPostalCode());
+	    document.put("country", getCountry());
+	    document.put("electronicMailAddress", getElectronicMailAddress());
+	     
+	    return document;
+	}
+
+	@Override
+	public void read(NitriteMapper mapper, Document document) {
+	    if (document != null) {
+	        setDeliveryPoint((String) document.get("deliveryPoint"));
+	        setCity((String) document.get("city"));
+	        setAdministrativeArea((String) document.get("administrativeArea"));
+	        setPostalCode((String) document.get("postalCode"));
+	        setCountry((String) document.get("country"));
+	        setElectronicMailAddress((String) document.get("electronicMailAddress"));     
+	    }
+	}	
 	
 	public String getDeliveryPoint() {
 		return deliveryPoint;

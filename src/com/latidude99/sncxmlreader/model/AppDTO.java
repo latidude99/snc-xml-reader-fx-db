@@ -2,7 +2,11 @@ package com.latidude99.sncxmlreader.model;
 
 import java.io.Serializable;
 
-public class AppDTO implements Serializable{
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
+public class AppDTO implements Serializable, Mappable{
 	private static final long serialVersionUID = -4634514619595007673L;
 	
 	String schemaVersion;
@@ -15,6 +19,39 @@ public class AppDTO implements Serializable{
 	String textSlot3;
 	String textSlot4;
 	String textSlot5;
+	
+	@Override
+	public Document write(NitriteMapper mapper) {
+	    Document document = new Document();
+	    document.put("schemaVersion", getSchemaVersion());
+	    document.put("textResult", getTextResult());
+	    document.put("labelLoadedDate", getLabelLoadedDate());
+	    document.put("labelInputError", getLabelInputError());
+	    document.put("textSearchChart", getTextSearchChart());
+	    document.put("textSlot1", getTextSlot1());
+	    document.put("textSlot2", getTextSlot2());
+	    document.put("textSlot3", getTextSlot3());
+	    document.put("textSlot4", getTextSlot4());
+	    document.put("textSlot5", getTextSlot5());
+	     
+	    return document;
+	}
+
+	@Override
+	public void read(NitriteMapper mapper, Document document) {
+	    if (document != null) {
+	        setSchemaVersion((String) document.get("schemaVersion"));
+	        setTextResult((String) document.get("textResult"));
+	        setLabelLoadedDate((String) document.get("labelLoadedDate"));
+	        setLabelInputError((String) document.get("labelInputError"));
+	        setTextSearchChart((String) document.get("textSearchChart"));
+	        setTextSlot1((String) document.get("textSlot1"));
+	        setTextSlot2((String) document.get("textSlot2"));
+	        setTextSlot3((String) document.get("textSlot3"));
+	        setTextSlot4((String) document.get("textSlot4"));
+	        setTextSlot5((String) document.get("textSlot5"));
+	    }
+	}	
 	
 	public String getSchemaVersion() {
 		return schemaVersion;

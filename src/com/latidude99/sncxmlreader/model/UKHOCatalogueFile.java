@@ -6,15 +6,37 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
 @XmlRootElement(name = "UKHOCatalogueFile") 
-public class UKHOCatalogueFile implements Serializable{
+public class UKHOCatalogueFile implements Serializable, Mappable{
 	private static final long serialVersionUID = 2961423601086814890L;
 
 	String schemaVersion;
 	BaseFileMetadata baseFileMetadata;
 	Products products;
 	
-    
+	@Override
+	public Document write(NitriteMapper mapper) {
+	    Document document = new Document();
+	    document.put("schemaVersion", getSchemaVersion());
+	    document.put("baseFileMetadata", getBaseFileMetadata());
+	    document.put("products", getProducts());
+	     
+	    return document;
+	}
+
+	@Override
+	public void read(NitriteMapper mapper, Document document) {
+	    if (document != null) {
+	        setSchemaVersion((String) document.get("schemaVersion"));
+	        setBaseFileMetadata((BaseFileMetadata) document.get("baseFileMetadata")); 
+	        setProducts((Products) document.get("products")); 
+	    }
+	}	
+	
     public String getSchemaVersion() {
 		return schemaVersion;
 	}

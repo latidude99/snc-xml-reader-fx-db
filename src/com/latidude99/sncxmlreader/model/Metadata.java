@@ -4,6 +4,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.dizitart.no2.Document;
+import org.dizitart.no2.mapper.Mappable;
+import org.dizitart.no2.mapper.NitriteMapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +17,7 @@ import java.util.List;
 					"status", "chartID", "chartNumber", "chartInternationalNumber", 
 					"chartNewEditionDate", "panels", "notices", "editionNumber", 
 					"lastNMNumber", "lastNMDate", "publicationDate"})
-public class Metadata implements Serializable{
+public class Metadata implements Serializable, Mappable{
 	private static final long serialVersionUID = 1314505904301660392L;
 
 	String datasetTitle;
@@ -32,7 +36,49 @@ public class Metadata implements Serializable{
 	String lastNMDate;
 	String publicationDate;
     
-    
+	 @Override
+	    public Document write(NitriteMapper mapper) {
+	        Document document = new Document();
+	        document.put("datasetTitle", getDatasetTitle());
+	        document.put("scale", getScale());
+	        document.put("geographicLimit", getGeographicLimit());
+	        document.put("catalogueNumber", getCatalogueNumber());
+	        document.put("status", getStatus());
+	        document.put("chartID", getChartID());
+	        document.put("chartNumber", getChartNumber());
+	        document.put("chartInternationalNumber", getChartInternationalNumber());
+	        document.put("chartNewEditionDate", getChartNewEditionDate());
+	        document.put("panels", getPanels());
+	        document.put("notices", getNotices());
+	        document.put("editionNumber", getEditionNumber());
+	        document.put("lastNMNumber", getLastNMNumber());
+	        document.put("lastNMDate", getLastNMDate());
+	        document.put("publicationDate", getPublicationDate());
+	        
+	        
+	        return document;
+	    }
+
+	    @Override
+	    public void read(NitriteMapper mapper, Document document) {
+	        if (document != null) {
+	            setDatasetTitle((String) document.get("datasetTitle"));
+	            setScale((String) document.get("scale"));
+	            setGeographicLimit((GeographicLimit) document.get("geographicLimit"));
+	            setCatalogueNumber((String) document.get("catalogueNumber"));
+	            setStatus((Status) document.get("status"));
+	            setChartID((String) document.get("chartID"));
+	            setChartNumber((String) document.get("chartNumber"));
+	            setChartInternationalNumber((String) document.get("chartInternationalNumber"));
+	            setChartNewEditionDate((String) document.get("chartNewEditionDate"));
+	            setPanels((List<Panel>) document.get("panels"));
+	            setNotices((List<NoticesToMariners>) document.get("notices"));
+	            setEditionNumber((String) document.get("editionNumber"));
+	            setLastNMNumber((String) document.get("lastNMNumber"));
+	            setLastNMDate((String) document.get("lastNMDate"));
+	            setPublicationDate((String) document.get("publicationDate"));
+	        }
+	    }
         
     public String getDatasetTitle() {
 		return datasetTitle;
