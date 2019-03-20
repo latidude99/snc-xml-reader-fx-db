@@ -1,5 +1,6 @@
 package com.latidude99.sncxmlreader.utils;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -9,6 +10,7 @@ import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 import org.dizitart.no2.objects.filters.ObjectFilters;
 
+import com.latidude99.sncxmlreader.db.ChartMap;
 import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 
@@ -20,6 +22,8 @@ public class ChartSearchTask extends Task<String> {
 	ChartUtils chartUtils = new ChartUtils();
 	private String input;
 	private boolean fullInfo;
+	long count;	
+	long searchedNum;
 	
 	
 	public ChartSearchTask(Nitrite database, String input, boolean fullInfo) {
@@ -67,22 +71,64 @@ public class ChartSearchTask extends Task<String> {
 	
 	
 	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched){
-		System.out.println(database.toString());
-		chartRepository = database.getRepository(StandardNavigationChart.class);		
+//		System.out.println(database.toString());
+//		chartRepository = database.getRepository(StandardNavigationChart.class);		
 		Map<String, StandardNavigationChart> chartsFound = new TreeMap<>();   
-		long count = 0;	
+		Map<String, StandardNavigationChart> chartMap = ChartMap.map;
 		
-		chartsFound = numbersSearched.parallelStream()
+		long startTime = System.currentTimeMillis();
+		for(String searchNum : numbersSearched) {
+			count++;
+			searchedNum = numbersSearched.size();
+			this.updateProgress(count, searchedNum);
+        	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
+//        	System.out.println("chart: " + chart);
+        	System.out.println("count: " + count + ", total to search: " + searchedNum);
+        	try {
+        	    Thread.sleep(2);                
+        	} catch(InterruptedException ex) {
+        	    Thread.currentThread().interrupt();
+        	}
+        	for(String chartNum : chartMap.keySet()) {
+        		if((searchNum).equals(chartNum))
+        				chartsFound.put(chartNum, chartMap.get(chartNum));
+        	}	
+        }
+		long stopTime = System.currentTimeMillis();
+	    long elapsedTime = stopTime - startTime;
+	    System.out.println("searched: " + numbersSearched.size() + ", time: " + elapsedTime);		
+				
+				
+/*		
+ 		// the fastest
+ 		numbersSearched.parallelStream()
+				.forEach(searchNum -> {
+					StandardNavigationChart chart = null;
+		        	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
+		        	count++;
+		        	searchedNum = numbersSearched.size();
+		        	this.updateProgress(count, searchedNum);
+		        	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
+		        	System.out.println("chart: " + chart);
+		        	System.out.println("count: " + count + ", total searched: " + searchedNum);
+		        	if(chart != null)
+		        		chartsFound.put(searchNum, chart);	
+		        
+				});
+		
+		// the slowest
+		numbersSearched.parallelStream()
 				 .filter(c -> 
 				 	chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault() != null)
 				 .collect(
 						 Collectors.toMap(c -> c, c -> chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault()));
-/*		
+						 
+		// slower
         for(String searchNum : numbersSearched) {
         	StandardNavigationChart chart = null;
         	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
         	count++;
-        	long searchedNum = numbersSearched.size();
+        	searchedNum = numbersSearched.size();
         	this.updateProgress(count, searchedNum);
         	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
         	System.out.println("chart: " + chart);
@@ -90,6 +136,7 @@ public class ChartSearchTask extends Task<String> {
         	if(chart != null)
         		chartsFound.put(searchNum, chart);	
         }
+        
 */      return chartsFound;
 	}
     

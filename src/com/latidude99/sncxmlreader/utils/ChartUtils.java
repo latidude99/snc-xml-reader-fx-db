@@ -1,15 +1,7 @@
 package com.latidude99.sncxmlreader.utils;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import org.dizitart.no2.objects.ObjectRepository;
-import org.dizitart.no2.objects.filters.ObjectFilters;
-import org.dizitart.no2.*;
-import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.Metadata;
 import com.latidude99.sncxmlreader.model.NoticesToMariners;
 import com.latidude99.sncxmlreader.model.Panel;

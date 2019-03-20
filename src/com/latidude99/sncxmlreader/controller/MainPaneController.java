@@ -45,6 +45,7 @@ import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.Cursor;
 import org.dizitart.no2.objects.ObjectRepository;
 
+import com.latidude99.sncxmlreader.utils.ChartMapLoadTask;
 import com.latidude99.sncxmlreader.utils.ChartSearchTask;
 import com.latidude99.sncxmlreader.utils.ChartUtils;
 import com.latidude99.sncxmlreader.utils.FileLoadTask;
@@ -52,6 +53,7 @@ import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.FormatUtils;
 import com.latidude99.sncxmlreader.utils.Info;
 import com.latidude99.sncxmlreader.utils.MessageBox;
+import com.latidude99.sncxmlreader.db.ChartMap;
 import com.latidude99.sncxmlreader.db.DBLoaderTask;
 import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.AppDTO;
@@ -97,6 +99,7 @@ public class MainPaneController implements Initializable{
     Nitrite database;
     FileLoadTask fileLoadTask;
     DBLoaderTask dbLoaderTask;
+    ChartMapLoadTask chartMapLoadTask;
     public void setDatabase(Nitrite database) {
     	this.database = database;
     }
@@ -164,6 +167,7 @@ public class MainPaneController implements Initializable{
 		configureControls();
 		dbInit();
 		startup();
+		loadChartsIntoMemory();
 		configureIO();
 		configureProcessing();
 	}
@@ -216,6 +220,35 @@ public class MainPaneController implements Initializable{
 			setInfoAfterDBLoaded();
 		}
 	}	
+	
+	public void loadChartsIntoMemory() {
+		if(database == null)
+			return;
+		else {
+			chartMapLoadTask = new ChartMapLoadTask(database);
+			buttonSearchChart.setDisable(true);
+			
+			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+						new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent t) {
+					ChartMap.map = chartMapLoadTask.getValue();
+					buttonSearchChart.setDisable(false);
+					System.out.println("ChartMap loaded into memory, " + ChartMap.map.size()) ;
+				}
+			});
+			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+						new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent t) {
+							
+				}
+			});
+			Thread thread = new Thread(chartMapLoadTask);
+		    thread.setDaemon(true);
+		    thread.start();
+		}
+	}
 	
 	public void configureIO(){
 		chartUtils = new ChartUtils();

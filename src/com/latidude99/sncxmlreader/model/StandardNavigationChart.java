@@ -24,7 +24,6 @@ public class StandardNavigationChart implements Serializable, Mappable{
 	    Document document = new Document();
 	    document.put("shortName", getShortName());
 	    document.put("metadata", getMetadata());
-	    System.out.println("StandardNavigationChart write, Mappable");
 	    return document;
 	}
 
@@ -33,7 +32,6 @@ public class StandardNavigationChart implements Serializable, Mappable{
 	    if (document != null) {
 	        setShortName((String) document.get("shortName"));
 	        setMetadata((Metadata) document.get("metadata"));
-	        System.out.println("StandardNavigationChart read, Mappable");
 	    }
 	}
  	
