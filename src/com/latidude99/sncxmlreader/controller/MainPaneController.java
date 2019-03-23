@@ -152,7 +152,7 @@ public class MainPaneController implements Initializable{
     TextField textSearchChart;
     Button buttonSearchChart;
     Line lineSeparator;
-    Button buttonCatInfo;
+    Button buttonChartMap;
     Hyperlink linkHelp;
     Hyperlink linkAbout;
     CheckBox checkboxInfo;
@@ -189,7 +189,7 @@ public class MainPaneController implements Initializable{
 	    textSearchChart = searchPaneController.getTextSearchChart();
 	    buttonSearchChart = searchPaneController.getButtonSearchChart();
 	    lineSeparator = inputPaneController.getLineSeparator();
-	    buttonCatInfo = searchPaneController.getButtonCatInfo();
+	    buttonChartMap = searchPaneController.getButtonChartMap();
 	    checkboxInfo = searchPaneController.getCheckboxInfo();
 	    progressSearch =contentPaneController.getProgressSearch();
 	}
@@ -288,16 +288,22 @@ public class MainPaneController implements Initializable{
 			}
 		});
 		
-		buttonCatInfo.setOnAction(new EventHandler<ActionEvent>(){
+		buttonChartMap.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
-			public void handle(ActionEvent event) {
-				if(meta != null && schemaVersion != null) {
-					setInfoAfterDBLoaded();	
-				} else {
-					MessageBox.show("The UKHO Standard Navigation ChartUtils_old catalogue has not been loaded yet.", "Info");
-				}				
-			}
-		});	
+            public void handle(ActionEvent event) {
+ 
+				try {
+			        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/latidude99/sncxmlreader/pane/mapPane.fxml"));
+			        Parent root1 = (Parent) fxmlLoader.load();
+			        Stage stage = new Stage();
+			        stage.setScene(new Scene(root1));
+			        stage.setResizable(true);
+			        stage.show();
+			    } catch(Exception e) {
+			        e.printStackTrace();
+			    }
+            }
+        });
 	}
 	
 	

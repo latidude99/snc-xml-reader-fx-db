@@ -94,6 +94,7 @@ public class ChartSearchTask extends Task<String> {
         				chartsFound.put(chartNum, chartMap.get(chartNum));
         	}	
         }
+		ChartMap.found = chartsFound;
 		long stopTime = System.currentTimeMillis();
 	    long elapsedTime = stopTime - startTime;
 	    System.out.println("searched: " + numbersSearched.size() + ", time: " + elapsedTime);		

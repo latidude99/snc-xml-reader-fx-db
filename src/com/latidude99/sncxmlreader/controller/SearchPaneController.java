@@ -37,7 +37,7 @@ public class SearchPaneController implements Initializable{
     @FXML
     private Button buttonSearchChart;
     @FXML
-    private Button buttonCatInfo;
+    private Button buttonChartMap;
     @FXML
     private CheckBox checkboxInfo;
     
@@ -48,8 +48,8 @@ public class SearchPaneController implements Initializable{
 	public Button getButtonSearchChart() {
 		return buttonSearchChart;
 	}
-	public Button getButtonCatInfo() {
-		return buttonCatInfo;
+	public Button getButtonChartMap() {
+		return buttonChartMap;
 	}
 	public CheckBox getCheckboxInfo() {
 		return checkboxInfo;

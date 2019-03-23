@@ -10,6 +10,8 @@ public class ChartMap {
 	
 	public static Map<String, StandardNavigationChart> map = new TreeMap<>();
 	
+	public static Map<String, StandardNavigationChart> found = new TreeMap<>();
+	
 	
 	
 }
