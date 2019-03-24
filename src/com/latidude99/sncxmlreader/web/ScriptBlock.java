@@ -38,97 +38,18 @@ public class ScriptBlock {
 	}
 	
 	private String createScriptMiddle(Map<String, StandardNavigationChart> charts) {
-		Map<String, String> scriptMap = new TreeMap<>();
+		Map<String, String> scriptMapAllFoundCharts = new TreeMap<>();
 		StringBuilder sb = new StringBuilder();
 		
 		for(StandardNavigationChart chart : charts.values()) {		
-			
-			
-			if(chart.getMetadata().getGeographicLimit() != null 
-					&& chart.getMetadata().getGeographicLimit().getPolygons() != null) {
-				String type = "Chart";
-				String chartVar = "chart" + chart.getShortName();
-				String chartNumber = chart.getShortName();
-				String chartName = chart.getMetadata().getDatasetTitle();
-				int scaleNumber = Integer.parseInt(chart.getMetadata().getScale().trim());
-          		String scaleFormatted = String.format("%,d", scaleNumber);
-				String chartScale = "1:" +  scaleFormatted;
-				String colour = getColour();
-				String latlngArray = createLatLngArray(chart.getMetadata().getGeographicLimit().getPolygons());
-				String chartNum = "\r\n" + 
-						"            var " + chartVar + " = new google.maps.Polygon({\r\n" + 
-						"                paths: [\r\n" + 
-										 latlngArray + "],\r\n" + 
-						"                strokeColor: '" + colour + "',\r\n" + 
-						"                strokeOpacity: 0.8,\r\n" + 
-						"                strokeWeight: 1,\r\n" + 
-						"                fillColor: '" + colour + "',\r\n" + 
-						"                fillOpacity: 0.3,\r\n" + 
-						"                number: '" + chartNumber + "',\r\n" + 
-						"                type: '" + type + "',\r\n" + 
-						"                name: '" + chartName + "',\r\n" + 
-						"                scale: '" + chartScale + "',\r\n" + 
-						"                map: map\r\n" + 
-						"            });\r\n" + 
-						"\r\n" + 
-						"            google.maps.event.addListener(" + chartVar + ", 'click', showInfo);\r\n" + 
-						"\r\n" + 
-						""
-						;
-		
-				System.out.println("chartNum: " + chartNum);
-				scriptMap.put(chartVar, chartNum);
-			}
-			
-			if(chart.getMetadata().getPanels() != null) {
-				String panelColour = getColour();
-				for(Panel panel : chart.getMetadata().getPanels()) {
-					
-					if(panel.getPolygon() != null) {
-						String type = "Panel";
-						String panelVar = "panel" + panel.getPanelID();
-						String chartNumber = chart.getShortName();
-						String chartName = chart.getMetadata().getDatasetTitle();
-						String panelName = panel.getPanelAreaName();
-						int scaleNumber = Integer.parseInt(panel.getPanelScale().trim());
-		          		String scaleFormatted = String.format("%,d", scaleNumber);
-						String panelScale = "1:" + scaleFormatted;
-						String latlngArray = createLatLngArray(panel.getPolygon());
-						String panelNum = "\r\n" + 
-								"            var " + panelVar + " = new google.maps.Polygon({\r\n" + 
-								"                paths: [\r\n" + 
-												 latlngArray + "],\r\n" + 
-								"                strokeColor: '" + panelColour + "',\r\n" + 
-								"                strokeOpacity: 0.8,\r\n" + 
-								"                strokeWeight: 1,\r\n" + 
-								"                fillColor: '" + panelColour + "',\r\n" + 
-								"                fillOpacity: 0.3,\r\n" + 
-								"                number: '" + chartNumber + "',\r\n" + 
-								"                type: '" + type + "',\r\n" + 
-								"                name: '" + panelName + "',\r\n" + 
-								"                scale: '" + panelScale + "',\r\n" + 
-								"                map: map\r\n" + 
-								"            });\r\n" + 
-								"\r\n" + 
-								"            google.maps.event.addListener(" + panelVar + ", 'click', showInfo);\r\n" + 
-								"\r\n" + 
-								""
-								;
-				
-//						System.out.println("chartNum: " + panelNum);
-						scriptMap.put(panelVar, panelNum);
-					}
-				}
-				
-			}
-			
-			
+			Map<String, String> scriptMapSingleChart = createScriptMapSingleChart(chart);
+			scriptMapAllFoundCharts.putAll(scriptMapSingleChart);
 		}
-		for(String varChartDefinition : scriptMap.values()) {
+		for(String varChartDefinition : scriptMapAllFoundCharts.values()) {
 			sb.append(varChartDefinition);
 		}
 		sb.append("\r\n            var polygons = new Array( ");
-		for(String varChartName : scriptMap.keySet()) {
+		for(String varChartName : scriptMapAllFoundCharts.keySet()) {
 			sb.append(varChartName +", ");
 		}
 		sb.append(" );\r\n\r\n");
@@ -169,13 +90,86 @@ public class ScriptBlock {
 	}
 	
 	private String getColour() {
-		String[] colours = {"#0099ff", "##33cccc", "##cc6600", "#990033", "#669999",
-				"#ff3399", "#660066", "#000099", "#00cc00", "#ff6600", "#009933",
-				"#cc3399", "#3366cc", "#ffcccc", "#cc66ff", "#cc3300", "#003300"};
+		String[] colours = {"#0033cc", "#008080", "#996600", "#990033", "#006666",
+				"#993366", "#660066", "#000099", "#006600", "#ff0000", "#009933",
+				"#cc3399", "#3366cc", "#cc9900", "#cc33ff", "#cc3300", "#003300"};
 		Random random =new Random();
         int randomNum=random.nextInt(colours.length);
         
         return colours[randomNum];
+	}
+	
+	
+	private Map<String, String> createScriptMapSingleChart(StandardNavigationChart chart){
+		Map<String, String> scriptMap = new TreeMap<>();
+		
+		if(chart.getMetadata().getGeographicLimit() != null 
+				&& chart.getMetadata().getGeographicLimit().getPolygons() != null) {
+			Map<String, String> params = new TreeMap<>();
+			int scaleNumber = Integer.parseInt(chart.getMetadata().getScale().trim());
+      		String scaleFormatted = String.format("%,d", scaleNumber);
+			params.put("type", "chart");
+			params.put("chartVar", "chart" + chart.getShortName());
+			params.put("chartNumber", chart.getShortName());
+			params.put("chartName", chart.getMetadata().getDatasetTitle());
+			params.put("chartScale", "1:" +  scaleFormatted);
+			params.put("colour", getColour());
+			params.put("latlngArray", createLatLngArray(chart.getMetadata().getGeographicLimit().getPolygons()));
+		
+			String chartNum = createChartNumHTML(params);
+			System.out.println("chartNum: " + chartNum);
+			scriptMap.put(params.get("chartVar"), chartNum);
+		}
+		
+		if(chart.getMetadata().getPanels() != null) {
+			String panelColour = getColour();
+			for(Panel panel : chart.getMetadata().getPanels()) {
+				
+				if(panel.getPolygon() != null) {
+					Map<String, String> params = new TreeMap<>();
+					int scaleNumber = Integer.parseInt(panel.getPanelScale().trim());
+		      		String scaleFormatted = String.format("%,d", scaleNumber);
+					params.put("type", "panel");
+					params.put("chartVar", "panel" + panel.getPanelID());
+					params.put("chartNumber", chart.getShortName());
+					params.put("chartName", panel.getPanelAreaName());
+					params.put("chartScale", "1:" +  scaleFormatted);
+					params.put("colour", panelColour);
+					params.put("latlngArray", createLatLngArray(panel.getPolygon()));
+				
+					String panelNum = createChartNumHTML(params);
+					
+					scriptMap.put(params.get("chartVar"), panelNum);
+				}
+			}
+			
+		}
+		return scriptMap;
+	}
+	
+	
+	private String createChartNumHTML(Map<String, String> params) {
+		String chartNumHTML = "\r\n" + 
+				"            var " + params.get("chartVar") + " = new google.maps.Polygon({\r\n" + 
+				"                paths: [\r\n" + 
+								 params.get("latlngArray") + "],\r\n" + 
+				"                strokeColor: '" + params.get("colour") + "',\r\n" + 
+				"                strokeOpacity: 0.8,\r\n" + 
+				"                strokeWeight: 1,\r\n" + 
+				"                fillColor: '" + params.get("colour") + "',\r\n" + 
+				"                fillOpacity: 0.3,\r\n" + 
+				"                number: '" + params.get("chartNumber") + "',\r\n" + 
+				"                type: '" + params.get("type") + "',\r\n" + 
+				"                name: '" + params.get("chartName") + "',\r\n" + 
+				"                scale: '" + params.get("chartScale") + "',\r\n" + 
+				"                map: map\r\n" + 
+				"            });\r\n" + 
+				"\r\n" + 
+				"            google.maps.event.addListener(" + params.get("chartVar") + ", 'click', showInfo);\r\n" + 
+				"\r\n" + 
+				""
+				;
+		return chartNumHTML;
 	}
 	
 	
@@ -220,7 +214,7 @@ public class ScriptBlock {
 				"        function showInfo(event) {\r\n" + 
 				"            var vertices = this.getPath();\r\n" + 
 				"\r\n" + 
-				"            var chartInfo = '<b>' + this.number + '</b><br><br>' +\r\n" + 
+				"            var chartInfo = '<b>' + this.number + '</b><br>' +\r\n" + 
 				"                            '<sup>' +    this.type + '</sup><br>' +\r\n" + 
 				"                                this.name + '</b><br>' +\r\n" + 
 				"                                this.scale + '</b><br>';\r\n" + 
