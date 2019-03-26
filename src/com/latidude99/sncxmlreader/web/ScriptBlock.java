@@ -102,50 +102,82 @@ public class ScriptBlock {
 	
 	private Map<String, String> createScriptMapSingleChart(StandardNavigationChart chart){
 		Map<String, String> scriptMap = new TreeMap<>();
-		
+		String chartColour = getColour();
 		if(chart.getMetadata().getGeographicLimit() != null 
-				&& chart.getMetadata().getGeographicLimit().getPolygons() != null) {
+				&& chart.getMetadata().getGeographicLimit().getPolygons() != null
+				&& chart.getMetadata().getGeographicLimit().getPolygons().get(0) != null) {
+			
 			Map<String, String> params = new TreeMap<>();
 			int scaleNumber = Integer.parseInt(chart.getMetadata().getScale().trim());
       		String scaleFormatted = String.format("%,d", scaleNumber);
+      		String latlngArray = createLatLngArray(chart.getMetadata().getGeographicLimit().getPolygons());
+      		Position positionStart = chart.getMetadata().getGeographicLimit().getPolygons().get(0).getPositions().get(0);
+      		String labelPosition = "new google.maps.LatLng(" 
+      					+ positionStart.getLatitude() + ", " + positionStart.getLongitude() + ")";
+      		String fontSize = "16px";
+      		String strokeWeight = "3";
+      		String fillOpacity = "0.25";
+      		
 			params.put("type", "chart");
-			params.put("chartVar", "chart" + chart.getShortName());
-			params.put("chartNumber", chart.getShortName());
+			params.put("chartVar", "chart" + chart.getShortName().trim());
+			params.put("chartNumber", chart.getShortName().trim());
 			params.put("chartName", chart.getMetadata().getDatasetTitle());
 			params.put("chartScale", "1:" +  scaleFormatted);
-			params.put("colour", getColour());
-			params.put("latlngArray", createLatLngArray(chart.getMetadata().getGeographicLimit().getPolygons()));
+			params.put("colour", chartColour);
+			params.put("latlngArray", latlngArray);
+			params.put("labelPosition", labelPosition);
+			params.put("fontSize", fontSize);
+			params.put("strokeWeight", strokeWeight);
+			params.put("fillOpacity", fillOpacity);
 		
 			String chartNum = createChartNumHTML(params);
-			System.out.println("chartNum: " + chartNum);
-			scriptMap.put(params.get("chartVar"), chartNum);
+			String label = createChartLabel(params);
+			String chartNumWithLabel = chartNum + label;
+//			System.out.println("chartNum: " + chartNum);
+			scriptMap.put(params.get("chartVar"), chartNumWithLabel);
 		}
 		
 		if(chart.getMetadata().getPanels() != null) {
-			String panelColour = getColour();
+//			String panelColour = getColour();
 			for(Panel panel : chart.getMetadata().getPanels()) {
 				
-				if(panel.getPolygon() != null) {
+				if(panel.getPolygon() != null && panel.getPolygon().getPositions() != null) {
 					Map<String, String> params = new TreeMap<>();
 					int scaleNumber = Integer.parseInt(panel.getPanelScale().trim());
 		      		String scaleFormatted = String.format("%,d", scaleNumber);
+		      		String latlngArray = createLatLngArray(panel.getPolygon());
+		      		Position positionStart = panel.getPolygon().getPositions().get(0);
+		      		String labelPosition = "new google.maps.LatLng(" 
+		      					+ positionStart.getLatitude() + ", " + positionStart.getLongitude() + ")";
+		      		String fontSize = "10px";
+		      		String strokeWeight = "1";
+		      		String fillOpacity = "0.1";
+		      		
 					params.put("type", "panel");
-					params.put("chartVar", "panel" + panel.getPanelID());
+					params.put("chartVar", "panel_" + panel.getPanelID() + "_of_" + chart.getShortName());
 					params.put("chartNumber", chart.getShortName());
 					params.put("chartName", panel.getPanelAreaName());
 					params.put("chartScale", "1:" +  scaleFormatted);
-					params.put("colour", panelColour);
-					params.put("latlngArray", createLatLngArray(panel.getPolygon()));
+					params.put("colour", chartColour);
+					params.put("latlngArray", latlngArray);
+					params.put("labelPosition", labelPosition);
+					params.put("fontSize", fontSize);
+					params.put("strokeWeight", strokeWeight);
+					params.put("fillOpacity", fillOpacity);
 				
 					String panelNum = createChartNumHTML(params);
+					String label = createChartLabel(params);
+					String panelNumWithLabel = panelNum + label;
+//					System.out.println("chartNum: " + panelNumWithLabel);
 					
-					scriptMap.put(params.get("chartVar"), panelNum);
+					scriptMap.put(params.get("chartVar"), panelNumWithLabel);
 				}
 			}
 			
 		}
 		return scriptMap;
 	}
+	
 	
 	
 	private String createChartNumHTML(Map<String, String> params) {
@@ -155,9 +187,9 @@ public class ScriptBlock {
 								 params.get("latlngArray") + "],\r\n" + 
 				"                strokeColor: '" + params.get("colour") + "',\r\n" + 
 				"                strokeOpacity: 0.8,\r\n" + 
-				"                strokeWeight: 1,\r\n" + 
+				"                strokeWeight: '" + params.get("strokeWeight") + "',\r\n" + 
 				"                fillColor: '" + params.get("colour") + "',\r\n" + 
-				"                fillOpacity: 0.3,\r\n" + 
+				"                fillOpacity: '" + params.get("fillOpacity") + "',\r\n" + 
 				"                number: '" + params.get("chartNumber") + "',\r\n" + 
 				"                type: '" + params.get("type") + "',\r\n" + 
 				"                name: '" + params.get("chartName") + "',\r\n" + 
@@ -166,12 +198,29 @@ public class ScriptBlock {
 				"            });\r\n" + 
 				"\r\n" + 
 				"            google.maps.event.addListener(" + params.get("chartVar") + ", 'click', showInfo);\r\n" + 
-				"\r\n" + 
-				""
+				"\r\n" 
 				;
 		return chartNumHTML;
 	}
 	
+	private String createChartLabel(Map<String, String> params) {
+		String label =  "\r\n" +
+				"            var marker_" + params.get("chartVar") + " = new google.maps.Marker({\r\n" + 
+				"                    map: map,\r\n" + 
+				"                    position: " + params.get("labelPosition") + ",\r\n" + 
+				"                    icon: \" \",\r\n" + 
+				"                    draggable: true,\r\n" + 
+				"                    label: {\r\n" + 
+				"                      text: '" + params.get("chartNumber") + "',\r\n" + 
+				"                      color: '" + params.get("colour") + "',\r\n" + 
+				"                      fontSize: '" + params.get("fontSize") + "',\r\n" + 
+				"                      fontShadow: \"0px\",\r\n" + 
+				"                      fontWeight: \"regular\"\r\n" + 
+				"                    }\r\n" + 
+				"              });\r\n"
+				;
+		return label;
+	}
 	
 	private String setScriptStart() {
 		scriptStart = "\r\n<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyCbeTjn_d4C-OFFJoRbmkfNfvyc7QjkAoM&callback=initMap\"></script>\r\n" + 
@@ -352,7 +401,7 @@ public class ScriptBlock {
           			}
           		}
           	}
-		System.out.println("WebPoly: " + sb.toString());
+//		System.out.println("WebPoly: " + sb.toString());
 		return sb.toString();
 	}
 
