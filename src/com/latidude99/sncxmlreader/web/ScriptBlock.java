@@ -1,10 +1,7 @@
 package com.latidude99.sncxmlreader.web;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -12,8 +9,12 @@ import com.latidude99.sncxmlreader.model.Panel;
 import com.latidude99.sncxmlreader.model.Polygon;
 import com.latidude99.sncxmlreader.model.Position;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+import com.latidude99.sncxmlreader.utils.FileUtils;
 
 public class ScriptBlock {
+	public static String CONFIG_PATH = "user_data/config.properties";
+	private String api_key; // "AIzaSyC_wf8M3SFAJrr6jy_4nK04jUzVgw-TpEY2";
+
 	Map<String, StandardNavigationChart> charts;
 	private String script;
 	private String scriptStart;
@@ -25,6 +26,7 @@ public class ScriptBlock {
 //		}
 	
 	public ScriptBlock(Map<String, StandardNavigationChart> charts) {
+		this.api_key = FileUtils.readApiKey(CONFIG_PATH, "no default key");
 		this.charts = charts;
 	}
 	
@@ -81,7 +83,7 @@ public class ScriptBlock {
 				int positionsNum = poly.getPositions().size();
           		for(int i = 0; i < positionsNum -1 ; i++) {
           			sb.append("                new google.maps.LatLng(" + 
-          						positions.get(i).getLatitude() + "," + positions.get(i).getLongitude() + ")");
+						positions.get(i).getLatitude() + "," + positions.get(i).getLongitude() + ")");
           			if(i !=  positionsNum - 2)
           				sb.append(",\r\n");
           		}
@@ -90,87 +92,106 @@ public class ScriptBlock {
 	}
 	
 	private String getColour() {
-		String[] colours = {"#0033cc", "#008080", "#996600", "#990033", "#006666",
-				"#993366", "#660066", "#000099", "#006600", "#ff0000", "#009933",
-				"#cc3399", "#3366cc", "#cc9900", "#cc33ff", "#cc3300", "#003300"};
+		String[] colours = { "#0033cc", "#008080", "#996633", "#990033", "#006666", "#73264d", "#660066", "#000099",
+				"#004d00", "#800000", "#006622", "#66194d", "#24478f", "#806000", "#260033", "#992600", "#003300" };
 		Random random =new Random();
         int randomNum=random.nextInt(colours.length);
         
         return colours[randomNum];
 	}
 	
+	private Coordinates calculateLabelCoords(Polygon polygon) {
+		ChartCentreCalc calculator = new ChartCentreCalc();
+		Coordinates centreCoords = new Coordinates();
+		centreCoords = calculator.calculatePolygonBottomLeftInside(polygon);
+		return centreCoords;
+	}
+	
 	
 	private Map<String, String> createScriptMapSingleChart(StandardNavigationChart chart){
 		Map<String, String> scriptMap = new TreeMap<>();
 		String chartColour = getColour();
+		List<Polygon> polygons = chart.getMetadata().getGeographicLimit().getPolygons();
+		int chartPolygonCount = 0;
 		if(chart.getMetadata().getGeographicLimit() != null 
-				&& chart.getMetadata().getGeographicLimit().getPolygons() != null
-				&& chart.getMetadata().getGeographicLimit().getPolygons().get(0) != null) {
-			
-			Map<String, String> params = new TreeMap<>();
-			int scaleNumber = Integer.parseInt(chart.getMetadata().getScale().trim());
-      		String scaleFormatted = String.format("%,d", scaleNumber);
-      		String latlngArray = createLatLngArray(chart.getMetadata().getGeographicLimit().getPolygons());
-      		Position positionStart = chart.getMetadata().getGeographicLimit().getPolygons().get(0).getPositions().get(0);
-      		String labelPosition = "new google.maps.LatLng(" 
-      					+ positionStart.getLatitude() + ", " + positionStart.getLongitude() + ")";
-      		String fontSize = "16px";
-      		String strokeWeight = "3";
-      		String fillOpacity = "0.25";
-      		
-			params.put("type", "chart");
-			params.put("chartVar", "chart" + chart.getShortName().trim());
-			params.put("chartNumber", chart.getShortName().trim());
-			params.put("chartName", chart.getMetadata().getDatasetTitle());
-			params.put("chartScale", "1:" +  scaleFormatted);
-			params.put("colour", chartColour);
-			params.put("latlngArray", latlngArray);
-			params.put("labelPosition", labelPosition);
-			params.put("fontSize", fontSize);
-			params.put("strokeWeight", strokeWeight);
-			params.put("fillOpacity", fillOpacity);
-		
-			String chartNum = createChartNumHTML(params);
-			String label = createChartLabel(params);
-			String chartNumWithLabel = chartNum + label;
-//			System.out.println("chartNum: " + chartNum);
-			scriptMap.put(params.get("chartVar"), chartNumWithLabel);
-		}
-		
-		if(chart.getMetadata().getPanels() != null) {
-//			String panelColour = getColour();
-			for(Panel panel : chart.getMetadata().getPanels()) {
-				
-				if(panel.getPolygon() != null && panel.getPolygon().getPositions() != null) {
+				&& polygons != null) {
+			for (Polygon polygon : polygons) {
+
+				if (polygon != null && polygon.getPositions() != null) {
 					Map<String, String> params = new TreeMap<>();
-					int scaleNumber = Integer.parseInt(panel.getPanelScale().trim());
-		      		String scaleFormatted = String.format("%,d", scaleNumber);
-		      		String latlngArray = createLatLngArray(panel.getPolygon());
-		      		Position positionStart = panel.getPolygon().getPositions().get(0);
-		      		String labelPosition = "new google.maps.LatLng(" 
-		      					+ positionStart.getLatitude() + ", " + positionStart.getLongitude() + ")";
-		      		String fontSize = "10px";
-		      		String strokeWeight = "1";
-		      		String fillOpacity = "0.1";
-		      		
-					params.put("type", "panel");
-					params.put("chartVar", "panel_" + panel.getPanelID() + "_of_" + chart.getShortName());
-					params.put("chartNumber", chart.getShortName());
-					params.put("chartName", panel.getPanelAreaName());
-					params.put("chartScale", "1:" +  scaleFormatted);
+					String chartVar = chart.getShortName().trim() + "_" + ++chartPolygonCount + "_polygon";
+					int scaleNumber = Integer.parseInt(chart.getMetadata().getScale().trim());
+					String chartName = chart.getMetadata().getDatasetTitle().replace("\'", "").replace("\"","");
+					String scaleFormatted = String.format("%,d", scaleNumber);
+					String latlngArray = createLatLngArray(polygon);
+					Coordinates coordsLabel = calculateLabelCoords(polygon);
+					String labelPosition = "new google.maps.LatLng(" + coordsLabel.latitude + ", "
+							+ coordsLabel.longitude + ")";
+					String fontSize = "16px";
+					String strokeWeight = "3";
+					String fillOpacity = "0.15";
+
+					params.put("type", "chart");
+					params.put("chartVar", "chart" + chartVar);
+					params.put("chartNumber", chart.getShortName().trim());
+					params.put("chartName", chartName);
+					params.put("chartScale", "1:" + scaleFormatted);
 					params.put("colour", chartColour);
 					params.put("latlngArray", latlngArray);
 					params.put("labelPosition", labelPosition);
 					params.put("fontSize", fontSize);
 					params.put("strokeWeight", strokeWeight);
 					params.put("fillOpacity", fillOpacity);
-				
-					String panelNum = createChartNumHTML(params);
+
+					String chartNum = createChartNumHTML(params);
 					String label = createChartLabel(params);
-					String panelNumWithLabel = panelNum + label;
-//					System.out.println("chartNum: " + panelNumWithLabel);
+					String chartNumWithLabel = chartNum + label;
+//					System.out.println("chartNum: " + chartNum);
+					scriptMap.put(params.get("chartVar"), chartNumWithLabel);
+				}
+			}
+		}
+		
+		if(chart.getMetadata().getPanels() != null) {
+//			String panelColour = getColour();
+			for(Panel panel : chart.getMetadata().getPanels()) {
+				int panelPolygonCount = 0;
+				if(panel.getPolygons() != null) {
+					for (Polygon polygon : panel.getPolygons()) {
+						Map<String, String> params = new TreeMap<>();
+						String chartVar = "panel_" + panel.getPanelID() + "_of_" + chart.getShortName()
+																+ "_" + ++panelPolygonCount + "_polygon";
+						String panelName = panel.getPanelAreaName().replace("\'", "").replace("\"", "");
+						int scaleNumber = Integer.parseInt(panel.getPanelScale().trim());
+						String scaleFormatted = String.format("%,d", scaleNumber);
+						String latlngArray = createLatLngArray(polygon);
+						Coordinates coordsLabel = calculateLabelCoords(polygon);
+						String labelPosition = "new google.maps.LatLng(" + coordsLabel.latitude + ", "
+								+ coordsLabel.longitude + ")";
+						String fontSize = "12px";
+						String strokeWeight = "1";
+						String fillOpacity = "0.1";
+
+						params.put("type", "panel");
+						params.put("chartVar", chartVar);
+						params.put("chartNumber", chart.getShortName());
+						params.put("chartName", panelName);
+						params.put("chartScale", "1:" + scaleFormatted);
+						params.put("colour", chartColour);
+						params.put("latlngArray", latlngArray);
+						params.put("labelPosition", labelPosition);
+						params.put("fontSize", fontSize);
+						params.put("strokeWeight", strokeWeight);
+						params.put("fillOpacity", fillOpacity);
 					
-					scriptMap.put(params.get("chartVar"), panelNumWithLabel);
+						String panelNum = createChartNumHTML(params);
+						String label = createChartLabel(params);
+						String pushLine = addPushMarkerIntoArray(params);
+						String panelNumWithLabel = panelNum + label + pushLine;
+//						System.out.println("chartNum: " + panelNumWithLabel);
+
+						scriptMap.put(params.get("chartVar"), panelNumWithLabel);
+					}
 				}
 			}
 			
@@ -209,21 +230,29 @@ public class ScriptBlock {
 				"                    map: map,\r\n" + 
 				"                    position: " + params.get("labelPosition") + ",\r\n" + 
 				"                    icon: \" \",\r\n" + 
-				"                    draggable: true,\r\n" + 
+				"                    draggable: true,\r\n" +
+				"                    visible: true,\r\n" +
 				"                    label: {\r\n" + 
 				"                      text: '" + params.get("chartNumber") + "',\r\n" + 
 				"                      color: '" + params.get("colour") + "',\r\n" + 
 				"                      fontSize: '" + params.get("fontSize") + "',\r\n" + 
-				"                      fontShadow: \"0px\",\r\n" + 
+				"                      fontShadow: \"6px\",\r\n" + 
 				"                      fontWeight: \"regular\"\r\n" + 
 				"                    }\r\n" + 
-				"              });\r\n"
+				"              });\r\n" +
+				"              \r\n"
 				;
 		return label;
 	}
+
+	private String addPushMarkerIntoArray(Map<String, String> params) {
+		String pushLine = "            markers.push(marker_" + params.get("chartVar") + ");\r\n";
+		return pushLine;
+	}
 	
 	private String setScriptStart() {
-		scriptStart = "\r\n<script src=\"https://maps.googleapis.com/maps/api/js?key=AIzaSyCbeTjn_d4C-OFFJoRbmkfNfvyc7QjkAoM&callback=initMap\"></script>\r\n" + 
+		scriptStart = "\r\n<script src=\"https://maps.googleapis.com/maps/api/js?key=" + api_key
+				+ "&callback=initMap\"></script>\r\n" + 
 				"    <script>\r\n" + 
 				"\r\n" + 
 				"        var map;\r\n" + 
@@ -238,6 +267,7 @@ public class ScriptBlock {
 				"\r\n" + 
 				"            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);\r\n" + 
 				"            infoWindow = new google.maps.InfoWindow();\r\n" + 
+				"            var markers = [];\r\n" + 
 				"\r\n" + 
 				""
 				;
@@ -246,6 +276,13 @@ public class ScriptBlock {
 	
 	private String setScriptEnd() {
 		scriptEnd = "\r\n" + 
+				"            google.maps.event.addListener(map, 'zoom_changed', function() {\r\n" + 
+				"                var zoom = map.getZoom();\r\n" + 
+				"                   for (i = 0; i < markers.length; i++) {\r\n"
+				+ "                      markers[i].setVisible(zoom > 6);\r\n" + 
+				"                   }\r\n" + 
+				"            });\r\n" + 
+				"            \r\n" + 
 				"            var bounds= new google.maps.LatLngBounds();\r\n" + 
 				"            for (var i=0; i < polygons.length; i++){\r\n" + 
 				"                var paths = polygons[i].getPaths();\r\n" + 
@@ -379,7 +416,7 @@ public class ScriptBlock {
 				;
 	}
 	
-	// only one polygon for now
+	// only one polygon for, not used for now
 	private String createScriptForOne(StandardNavigationChart chart) {
 		int count = 0;
 		StringBuilder sb = new StringBuilder();

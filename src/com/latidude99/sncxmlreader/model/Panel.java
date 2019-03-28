@@ -1,6 +1,8 @@
 package com.latidude99.sncxmlreader.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -17,7 +19,7 @@ public class Panel implements Serializable, Mappable{
 	String panelAreaName;
  	String panelName;
  	String panelScale;
- 	Polygon polygon;
+	List<Polygon> polygons;
  	
  	@Override
  	public Document write(NitriteMapper mapper) {
@@ -26,7 +28,7 @@ public class Panel implements Serializable, Mappable{
  	    document.put("panelAreaName", getPanelAreaName());
  	    document.put("panelName", getPanelName());
  	    document.put("panelScale", getPanelScale());
- 	    document.put("polygon", getPolygon());
+		document.put("polygons", getPolygons());
  	     
  	    return document;
  	}
@@ -38,7 +40,7 @@ public class Panel implements Serializable, Mappable{
  	        setPanelAreaName((String) document.get("panelAreaName"));
  	        setPanelName((String) document.get("panelName"));
  	        setPanelScale((String) document.get("panelScale"));
- 	        setPolygon((Polygon) document.get("polygon"));
+			setPolygons((List<Polygon>) document.get("polygons"));
  	    }
  	}	
  	
@@ -80,14 +82,20 @@ public class Panel implements Serializable, Mappable{
 	public void setPanelScale(String panelScale) {
 		this.panelScale = panelScale;
 	}
-	public Polygon getPolygon() {
-		return polygon;
+
+	public List<Polygon> getPolygons() {
+		return polygons;
 	}
 	@XmlElement(name = "Polygon")
-	public void setPolygon(Polygon polygon) {
-		this.polygon = polygon;
+	public void setPolygons(List<Polygon> polygons) {
+		this.polygons = polygons;
 	}
  	
- 	
+	public void add(Polygon polygon) {
+        if (this.polygons == null) {
+            this.polygons = new ArrayList<Polygon>();
+        }
+        this.polygons.add(polygon);
+	}
 
 }

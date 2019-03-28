@@ -27,17 +27,21 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.html.HTMLFormElement;
 import org.w3c.dom.html.HTMLInputElement;
 
+import com.latidude99.sncxmlreader.db.ChartMap;
 import com.latidude99.sncxmlreader.db.DBLoaderTask;
 import com.latidude99.sncxmlreader.db.Database;
+import com.latidude99.sncxmlreader.model.AppDTO;
 import com.latidude99.sncxmlreader.model.BaseFileMetadata;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
+import com.latidude99.sncxmlreader.utils.ChartMapLoadTask;
 import com.latidude99.sncxmlreader.utils.ConnectionUtils;
 import com.latidude99.sncxmlreader.utils.DownloadTask;
 import com.latidude99.sncxmlreader.utils.Downloader2;
 import com.latidude99.sncxmlreader.utils.FileLoadTask;
 import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.MessageBox;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -62,6 +66,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class WebPaneController implements Initializable{
+	public static String API_KEY = "no default key";
 	public static String CONFIG_PATH = "user_data/config.properties";
 	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
@@ -124,15 +129,13 @@ public class WebPaneController implements Initializable{
 	Button buttonStop;
 	@FXML
 	Rectangle rectangleCover;
-	
-	MainPaneController mainPaneController;
-	public MainPaneController getMainPaneController() {
-		return mainPaneController;
-	}
-	public void setMainPaneController(MainPaneController mainPaneController) {
-		this.mainPaneController = mainPaneController;
-	}
-	
+
+	/*
+	 * MainPaneController mainPaneController; public MainPaneController
+	 * getMainPaneController() { return mainPaneController; } public void
+	 * setMainPaneController(MainPaneController mainPaneController) {
+	 * this.mainPaneController = mainPaneController; }
+	 */
 	
     
 
@@ -147,9 +150,13 @@ public class WebPaneController implements Initializable{
 		configureButtons();            		
 	}
 	
+
+
 	private void configurePaths() {
 		FILE_PATH = FileUtils.readXMLPath(CONFIG_PATH, FILE_PATH);
 		DB_PATH = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
+		API_KEY = FileUtils.readApiKey(CONFIG_PATH, API_KEY);
+
 	}
 	
 	
@@ -285,8 +292,9 @@ public class WebPaneController implements Initializable{
 	                       						new EventHandler<WorkerStateEvent>() {
 	                           @Override
 	                           public void handle(WorkerStateEvent t) {
-	                        	   FILE_PATH = FileUtils.readXMLPath(CONFIG_PATH, FILE_PATH);
-	                        	   ukhoCatalogueFile = loadFileFromPath(FILE_PATH);
+								String newfilePath = FileUtils.readXMLPath(CONFIG_PATH, FILE_PATH);
+								FILE_PATH = newfilePath;
+								ukhoCatalogueFile = loadFileFromPath(newfilePath);
 	                        	   String downloadedCatalogueDate = 
 	                        			   ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp();
 	                        	   int downloadedChartsNum = 
@@ -386,15 +394,17 @@ public class WebPaneController implements Initializable{
 						new EventHandler<WorkerStateEvent>() {
 					@Override
 					public void handle(WorkerStateEvent t) {
-						String chartLoadedNum = dbLoaderTask.messageProperty().getValue().toString();
-						labelDownloaded.textProperty().unbind();
-						labelDownloaded.setText(chartLoadedNum + ". Databse updated.");
-						buttonStop.setVisible(false);
-						buttonClose.setVisible(true);
-						Database.databaseInstance = dbLoaderTask.getValue();
-						System.out.println("DB_PATH: " + DB_PATH);
-						System.out.println("dbPathNew: " + dbPathNew);
-						FileUtils.writeConfig(FILE_PATH, dbPathNew);
+								String chartLoadedNum = dbLoaderTask.messageProperty().getValue().toString();
+								labelDownloaded.textProperty().unbind();
+								labelDownloaded.setText(chartLoadedNum + ". Databse updated.");
+								buttonStop.setVisible(false);
+								buttonClose.setVisible(true);
+								Database.databaseInstance = dbLoaderTask.getValue();
+								database = Database.databaseInstance;
+								loadChartsIntoMemory();
+								System.out.println("DB_PATH: " + DB_PATH);
+								System.out.println("dbPathNew: " + dbPathNew);
+								FileUtils.writeConfig(FILE_PATH, dbPathNew, API_KEY);
 						}
 					});
 				dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
@@ -534,7 +544,8 @@ public class WebPaneController implements Initializable{
 	
 	// not used
 	Runnable afterLoginTask = new Runnable() {
-        public void run() {
+        @Override
+		public void run() {
             afterLogin();
         }
     };
@@ -562,6 +573,37 @@ public class WebPaneController implements Initializable{
         }
     }
     
+	public void loadChartsIntoMemory() {
+//		database = Database.databaseInstance;
+		if (database == null || !database.hasRepository(AppDTO.class)) {
+			System.out.println("--------------------database == null || !database.hasRepository(AppDTO.class)");
+			return;
+		} else {
+			ChartMapLoadTask chartMapLoadTask = new ChartMapLoadTask(database);
+//			buttonSearchChart.setDisable(true);
+
+			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
+					new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent t) {
+							ChartMap.map = chartMapLoadTask.getValue();
+//					buttonSearchChart.setDisable(false);
+							System.out.println(
+									"+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.map.size());
+						}
+					});
+			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED,
+					new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent t) {
+
+						}
+					});
+			Thread thread = new Thread(chartMapLoadTask);
+			thread.setDaemon(true);
+			thread.start();
+		}
+	}
     
 	
 	

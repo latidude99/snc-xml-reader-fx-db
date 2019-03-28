@@ -11,6 +11,7 @@ public class FileUtils2 {
 	public static String CONFIG_PATH = "user_data/config.txt";
 	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
+	private static String API_KEY = "AIzaSyC_wf8M3SFAJrr6jy_4nK04jUzVgw-TpEY2";
 /*	
 	public static void main(String[] args) {
 		
@@ -89,7 +90,7 @@ public class FileUtils2 {
 							 "\r\n" + 
 							 "\r\n" + 
 							 "\r\n" + 
-							 "# Please leave the next line uncommented:\r\n" + 
+							 "# Please leave the next lines uncommented:\r\n" + 
 							 "\r\n" +
 							 "Catalogue:, " + xmlPath + ", Database:, " + dbPath + 
 							 "\r\n" + 

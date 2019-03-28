@@ -11,7 +11,7 @@
 
 Copyright (C) 2019  Piotr Czapik
 @author Piotr Czapik
-@version 1.0 
+@version 1.6 
 
 SncXmlReaderFXDB is free software: you can redistribute it and/or modify 
 it under the terms of the GNU General Public License as published by

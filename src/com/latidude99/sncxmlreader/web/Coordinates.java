@@ -1,8 +1,10 @@
 package com.latidude99.sncxmlreader.web;
 
 public class Coordinates {
-	public final double latitude;
-	public final double longitude;
+	public double latitude;
+	public double longitude;
+	
+	public Coordinates(){}
 	
 	public Coordinates(double lat, double lng) {
 		this.latitude = lat;

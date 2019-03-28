@@ -20,20 +20,19 @@
 
 package com.latidude99.sncxmlreader.controller;
 
-import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -45,6 +44,13 @@ import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.Cursor;
 import org.dizitart.no2.objects.ObjectRepository;
 
+import com.latidude99.sncxmlreader.db.ChartMap;
+import com.latidude99.sncxmlreader.db.DBLoaderTask;
+import com.latidude99.sncxmlreader.db.Database;
+import com.latidude99.sncxmlreader.model.AppDTO;
+import com.latidude99.sncxmlreader.model.BaseFileMetadata;
+import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 import com.latidude99.sncxmlreader.utils.ChartMapLoadTask;
 import com.latidude99.sncxmlreader.utils.ChartSearchTask;
 import com.latidude99.sncxmlreader.utils.ChartUtils;
@@ -53,21 +59,14 @@ import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.FormatUtils;
 import com.latidude99.sncxmlreader.utils.Info;
 import com.latidude99.sncxmlreader.utils.MessageBox;
-import com.latidude99.sncxmlreader.db.ChartMap;
-import com.latidude99.sncxmlreader.db.DBLoaderTask;
-import com.latidude99.sncxmlreader.db.Database;
-import com.latidude99.sncxmlreader.model.AppDTO;
-import com.latidude99.sncxmlreader.model.BaseFileMetadata;
-import com.latidude99.sncxmlreader.model.StandardNavigationChart;
-import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 
-import javafx.fxml.Initializable;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -88,6 +87,7 @@ import javafx.stage.StageStyle;
 
 
 public class MainPaneController implements Initializable{
+	private static String API_KEY = "no default key";
 	private static final String CONFIG_PATH = "user_data/config.properties";
 	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
@@ -111,9 +111,10 @@ public class MainPaneController implements Initializable{
 	@FXML
 	ContentPaneController contentPaneController;
 	@FXML
-	WebPaneController webPaneController;
-	@FXML
 	CataloguePaneController cataloguePaneController;
+	
+
+	WebPaneController webPaneController;
 	
 	SplashPaneController splashPaneController;
     Button buttonSplash;
@@ -140,7 +141,7 @@ public class MainPaneController implements Initializable{
     File fileTmp;
     
   
-    TextArea textResult;
+	public TextArea textResult;
     Button buttonClearSearch;
     Label labelTitle;
     TextField pathLoadFile;
@@ -163,7 +164,7 @@ public class MainPaneController implements Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		initialCleanup();
+		initialSettings();
 		configureControls();
 		dbInit();
 		startup();
@@ -172,8 +173,10 @@ public class MainPaneController implements Initializable{
 		configureProcessing();
 	}
 	
-	private void initialCleanup() {
-		
+	public void initialSettings() {
+		String apiKey = FileUtils.readApiKey(CONFIG_PATH, API_KEY);
+		API_KEY = apiKey;
+		System.out.println( API_KEY + ", " + API_KEY);
 	}
 	
 	public void configureControls() {
@@ -196,6 +199,7 @@ public class MainPaneController implements Initializable{
 	
 	public void dbInit() {
 		org.apache.log4j.BasicConfigurator.configure();
+		buttonSearchChart.setDisable(true);
 		String dbPath = FileUtils.readDBPath(CONFIG_PATH, DB_PATH);
 		database = Nitrite.builder()
 				.compressed()
@@ -222,8 +226,11 @@ public class MainPaneController implements Initializable{
 	}	
 	
 	public void loadChartsIntoMemory() {
-		if(database == null)
+//		database = Database.databaseInstance;
+		if(database == null || !database.hasRepository(AppDTO.class)) {
+			System.out.println("--------------------database == null || !database.hasRepository(AppDTO.class)");
 			return;
+		}
 		else {
 			chartMapLoadTask = new ChartMapLoadTask(database);
 			buttonSearchChart.setDisable(true);
@@ -234,7 +241,7 @@ public class MainPaneController implements Initializable{
 				public void handle(WorkerStateEvent t) {
 					ChartMap.map = chartMapLoadTask.getValue();
 					buttonSearchChart.setDisable(false);
-					System.out.println("ChartMap loaded into memory, " + ChartMap.map.size()) ;
+					System.out.println("+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.map.size()) ;
 				}
 			});
 			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
@@ -328,6 +335,8 @@ public class MainPaneController implements Initializable{
 			public void handle(KeyEvent event) {
 				if(event.getCode().equals(KeyCode.ENTER)) {
 					searchCharts();
+					if (ChartMap.map != null)
+						buttonSearchChart.setDisable(false);
 				}
 			}
 		});
@@ -450,7 +459,7 @@ public class MainPaneController implements Initializable{
 			jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		    ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
-		    FileUtils.writeConfig(filePath, DB_PATH);
+			FileUtils.writeConfig(filePath, DB_PATH, API_KEY);
 		} catch (FileNotFoundException io) {
 			textResult.setText("Catalogue and Database files not found. \n\n"
 					+ "Please choose catalogue file manually \n"
@@ -522,9 +531,10 @@ public class MainPaneController implements Initializable{
 					splashPaneController.getLabelSplash().setText("Databse updated.");
 					splashPaneController.getButtonSplash().setText("Close Info.");
 					setInfoAfterDBLoaded();
+					loadChartsIntoMemory();
 					System.out.println("DB_PATH: " + DB_PATH);
 					System.out.println("dbPathNew: " + dbPathNew);
-					FileUtils.writeConfig(filePath, dbPathNew);
+					FileUtils.writeConfig(filePath, dbPathNew, API_KEY);
 					}
 				});
 			
@@ -551,7 +561,7 @@ public class MainPaneController implements Initializable{
 							+ "Load the XML catalogue manually or restart the SncXmlReader to try again.\n"
 							+ "If you do not have an XML catalogue file please download it form the UKHO website.\n");
 					splashPaneController.getButtonSplash().setText("Close Window");
-					FileUtils.writeConfig(filePath, DB_PATH);
+							FileUtils.writeConfig(filePath, DB_PATH, API_KEY);
 //					dbLoaderTask.getException().printStackTrace();
 				}
 			});
@@ -567,9 +577,10 @@ public class MainPaneController implements Initializable{
 	}
 		
 	private void searchCharts() {
-		if(meta == null) {
-			MessageBox.show("The UKHO Standard Navigation ChartUtils_old catalogue has not been loaded yet.\n"
-					  + "          Load the catalogue first and then search for charts!", "Info");
+		if (ChartMap.map == null) {
+
+			MessageBox.show("The UKHO Standard Navigation Chart catalogue has not been loaded into memory yet.\n"
+					+ "          Load the catalogue first and then search for charts", "Info");
 			return;
 		}
 		boolean fullInfo = checkboxInfo.isSelected();
