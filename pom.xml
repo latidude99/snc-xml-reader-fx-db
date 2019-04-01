@@ -45,13 +45,13 @@
 	       <artifactId>slf4j-log4j12</artifactId>
 	       <version>1.7.5</version>
 	   </dependency>
-	   <!-- https://mvnrepository.com/artifact/uk.me.jstott/jcoord 
+	   <!-- https://mvnrepository.com/artifact/uk.me.jstott/jcoord -->
 		<dependency>
 		    <groupId>uk.me.jstott</groupId>
 		    <artifactId>jcoord</artifactId>
 		    <version>1.0</version>
 		</dependency>
-		-->
+		
 		<!-- https://mvnrepository.com/artifact/com.zenjava/javafx-maven-plugin 
 		<dependency>
 		    <groupId>com.zenjava</groupId>

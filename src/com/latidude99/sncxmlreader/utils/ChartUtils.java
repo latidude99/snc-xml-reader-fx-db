@@ -2,6 +2,7 @@ package com.latidude99.sncxmlreader.utils;
 
 import java.util.Map;
 import java.util.Set;
+
 import com.latidude99.sncxmlreader.model.Metadata;
 import com.latidude99.sncxmlreader.model.NoticesToMariners;
 import com.latidude99.sncxmlreader.model.Panel;
@@ -75,8 +76,9 @@ public class ChartUtils {
 		if(meta.getGeographicLimit() != null && meta.getGeographicLimit().getPolygons() != null) {
         	sb.append("\n\nGeographic Limits: ");
           	for(Polygon polygon : meta.getGeographicLimit().getPolygons()) {
+				sb.append("\r\n               Polygon: ");
           		for(Position position : polygon.getPositions())
-          			sb.append("\n     Position:     "
+					sb.append("\n                          Position:     "
           									+ " latitude = " + position.getLatitude()
           									+ " longitude = " + position.getLongitude());
           	}
@@ -114,12 +116,15 @@ public class ChartUtils {
           		int scaleNumber = Integer.parseInt(panel.getPanelScale());
           		String scaleFormatted = String.format("%,d", scaleNumber);
           		sb.append("\n     Panel Scale: " + scaleFormatted);
-          		if(panel.getPolygon() != null && panel.getPolygon().getPositions() != null) {
-	          		for(Position position : panel.getPolygon().getPositions()) {
-	          			sb.append("\n          Position -- "
-	             									+ " latitude = " + position.getLatitude()
-	             									+ " longitude = " + position.getLongitude());
-	          		}
+				if (panel.getPolygons() != null) {
+					for (Polygon polygon : panel.getPolygons()) {
+						sb.append("\r\n               Polygon: ");
+						for (Position position : polygon.getPositions()) {
+							sb.append("\n                          " + " latitude = " + position.getLatitude()
+									+ " longitude = " + position.getLongitude());
+						}
+					}
+
           		}
           	}	
         }

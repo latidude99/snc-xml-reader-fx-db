@@ -8,6 +8,7 @@ import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+
 import javafx.concurrent.Task;
 
 public class ChartMapLoadTask extends Task<Map<String, StandardNavigationChart>> {
@@ -44,6 +45,7 @@ public class ChartMapLoadTask extends Task<Map<String, StandardNavigationChart>>
     protected void succeeded() {
        System.out.println("ChartMap loaded from Database: " + chartList.size() + ", charts: ");
     }
+    
     
    
 }

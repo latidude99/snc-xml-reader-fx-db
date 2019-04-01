@@ -11,7 +11,7 @@ public class FormatUtils {
 	public static Set<String> parseInput(String input) {
         List<String> inputList = new ArrayList<>();
         Set<String> outputSet = new TreeSet<>();
-        
+                	        
         String[] numbers = input.split(",");
 		for(String s: numbers) {
 	        s= s.trim().replaceAll(" ", "").replaceAll("\u00A0", "");

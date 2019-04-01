@@ -1,18 +1,16 @@
 package com.latidude99.sncxmlreader.utils;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
-import org.dizitart.no2.objects.filters.ObjectFilters;
 
 import com.latidude99.sncxmlreader.db.ChartMap;
 import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+import com.latidude99.sncxmlreader.web.ChartProximityCalculator;
 
 import javafx.concurrent.Task;
 
@@ -26,10 +24,16 @@ public class ChartSearchTask extends Task<String> {
 	long searchedNum;
 	
 	
+	public ChartSearchTask(String input, boolean fullInfo) {
+		this.input = input;
+		this.fullInfo = fullInfo;
+	}
+
 	public ChartSearchTask(Nitrite database, String input, boolean fullInfo) {
 		this.input = input;
 		this.fullInfo = fullInfo;
     }
+
 
     @Override
     protected String call() throws Exception {
@@ -72,9 +76,11 @@ public class ChartSearchTask extends Task<String> {
 	
 	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched){
 //		System.out.println(database.toString());
-//		chartRepository = database.getRepository(StandardNavigationChart.class);		
-		Map<String, StandardNavigationChart> chartsFound = new TreeMap<>();   
-		Map<String, StandardNavigationChart> chartMap = ChartMap.map;
+//		chartRepository = database.getRepository(StandardNavigationChart.class);
+		ChartProximityCalculator chartProximityCalculator = new ChartProximityCalculator();
+		Map<String, StandardNavigationChart> chartsFound = new LinkedHashMap<>();
+		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();
+		Map<String, StandardNavigationChart> chartMap = ChartMap.all;
 		
 		long startTime = System.currentTimeMillis();
 		for(String searchNum : numbersSearched) {
@@ -85,7 +91,7 @@ public class ChartSearchTask extends Task<String> {
 //        	System.out.println("chart: " + chart);
         	System.out.println("count: " + count + ", total to search: " + searchedNum);
         	try {
-        	    Thread.sleep(2);                
+        	    Thread.sleep(1);                
         	} catch(InterruptedException ex) {
         	    Thread.currentThread().interrupt();
         	}
@@ -95,10 +101,21 @@ public class ChartSearchTask extends Task<String> {
         	}	
         }
 		ChartMap.found = chartsFound;
+		if(chartsFound.size() > 1) {
+			ChartMap.display = chartsFound;
+		}else {
+			chartsProximal = chartProximityCalculator.totalChartsOverlapMap(chartsFound, ChartMap.all);
+			ChartMap.display = chartsProximal;
+		}
+			
 		long stopTime = System.currentTimeMillis();
 	    long elapsedTime = stopTime - startTime;
 	    System.out.println("searched: " + numbersSearched.size() + ", time: " + elapsedTime);		
-				
+		
+	    return ChartMap.display;
+	}
+
+}
 				
 /*		
  		// the fastest
@@ -138,12 +155,10 @@ public class ChartSearchTask extends Task<String> {
         		chartsFound.put(searchNum, chart);	
         }
         
-*/      return chartsFound;
-	}
+*/      
     
 	
    
-}
 
 
 

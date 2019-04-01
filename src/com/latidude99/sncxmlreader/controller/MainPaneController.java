@@ -54,6 +54,7 @@ import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 import com.latidude99.sncxmlreader.utils.ChartMapLoadTask;
 import com.latidude99.sncxmlreader.utils.ChartSearchTask;
 import com.latidude99.sncxmlreader.utils.ChartUtils;
+import com.latidude99.sncxmlreader.utils.ChartsLoadedCheckTask;
 import com.latidude99.sncxmlreader.utils.FileLoadTask;
 import com.latidude99.sncxmlreader.utils.FileUtils;
 import com.latidude99.sncxmlreader.utils.FormatUtils;
@@ -100,6 +101,7 @@ public class MainPaneController implements Initializable{
     FileLoadTask fileLoadTask;
     DBLoaderTask dbLoaderTask;
     ChartMapLoadTask chartMapLoadTask;
+    ChartsLoadedCheckTask chartsLoadedCheckTask;
     public void setDatabase(Nitrite database) {
     	this.database = database;
     }
@@ -172,6 +174,7 @@ public class MainPaneController implements Initializable{
 		configureIO();
 		configureProcessing();
 	}
+
 	
 	public void initialSettings() {
 		String apiKey = FileUtils.readApiKey(CONFIG_PATH, API_KEY);
@@ -239,9 +242,9 @@ public class MainPaneController implements Initializable{
 						new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent t) {
-					ChartMap.map = chartMapLoadTask.getValue();
+					ChartMap.all = chartMapLoadTask.getValue();
 					buttonSearchChart.setDisable(false);
-					System.out.println("+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.map.size()) ;
+					System.out.println("+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.all.size()) ;
 				}
 			});
 			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
@@ -309,7 +312,7 @@ public class MainPaneController implements Initializable{
 			    } catch(Exception e) {
 			        e.printStackTrace();
 			    }
-            }
+			}
         });
 	}
 	
@@ -319,7 +322,8 @@ public class MainPaneController implements Initializable{
 		buttonClearSearch.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent event) {
-				textResult.clear();
+				if(ChartMap.all != null && ChartMap.all.size() > 3800)
+					setInfoAfterDBLoaded();
 			}
 		});
 		
@@ -335,7 +339,7 @@ public class MainPaneController implements Initializable{
 			public void handle(KeyEvent event) {
 				if(event.getCode().equals(KeyCode.ENTER)) {
 					searchCharts();
-					if (ChartMap.map != null)
+					if (ChartMap.all != null)
 						buttonSearchChart.setDisable(false);
 				}
 			}
@@ -577,12 +581,19 @@ public class MainPaneController implements Initializable{
 	}
 		
 	private void searchCharts() {
-		if (ChartMap.map == null) {
+		if (ChartMap.all == null) {
 
 			MessageBox.show("The UKHO Standard Navigation Chart catalogue has not been loaded into memory yet.\n"
 					+ "          Load the catalogue first and then search for charts", "Info");
 			return;
 		}
+		if("all".equals(textSearchChart.getText().trim().toLowerCase())) {
+			ChartMap.display = ChartMap.all;
+        	textResult.setText("All charts loaded and ready to be displayed.\r\n\r\n"
+        			+ "It may take a minute or two especially if your Internet connection is slow\r\n"
+        			+ "or your computer does not have sufficient amount of RAM");
+        	return;
+        }
 		boolean fullInfo = checkboxInfo.isSelected();
 		textResult.clear();
 		String searchInput = textSearchChart.getText().trim();
@@ -612,6 +623,31 @@ public class MainPaneController implements Initializable{
 		});
 		
 		Thread thread = new Thread(chartSearchTask);
+        thread.setDaemon(true);
+        thread.start();
+	}
+	
+	// not used now
+	private void chartsLoadedCheck() {
+		
+		chartsLoadedCheckTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
+				new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				textResult.textProperty().unbind();
+				setInfoAfterDBLoaded();
+				buttonSearchChart.setVisible(true);
+				}
+			});
+		chartsLoadedCheckTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
+							new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				
+			}
+		});
+		
+		Thread thread = new Thread(chartsLoadedCheckTask);
         thread.setDaemon(true);
         thread.start();
 	}

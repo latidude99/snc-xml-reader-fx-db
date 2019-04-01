@@ -6,8 +6,12 @@ import java.io.IOException;
 //import java.io.InputStreamReader;
 //import java.io.Reader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 //import java.net.URLConnection;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import com.latidude99.sncxmlreader.db.ChartMap;
 import com.latidude99.sncxmlreader.web.HTMLContent;
@@ -22,6 +26,9 @@ public class MapPaneController implements Initializable{
 	
 	@FXML
     private WebView webView;
+	
+	private static final int MAX_DISPLAYED = 10_000;
+	private static final String FILE_PATH = "user_data/searched/";
 	
 	WebEngine webEngine;
 
@@ -50,28 +57,53 @@ public class MapPaneController implements Initializable{
         webEngine = webView.getEngine();
 		webEngine.setJavaScriptEnabled(true);
 		
-		ScriptBlock scriptBlock = new ScriptBlock(ChartMap.found); 
+		ScriptBlock scriptBlock = new ScriptBlock(ChartMap.display); 
 		HTMLContent htmlContent =  new HTMLContent(scriptBlock);
 		String content =  htmlContent.getContent();
 				
-		if(ChartMap.found.isEmpty())	
+		if(ChartMap.display.isEmpty())	
 			webEngine.loadContent(contentNoChartsFound, "text/html");	
-		else if (ChartMap.found.size() > 10)
+		else if (ChartMap.display.size() > MAX_DISPLAYED)
 			webEngine.loadContent(contentTooManyChartsFound, "text/html");
-		else {
+		else if(ChartMap.display.size() == ChartMap.all.size()) {
 			webEngine.loadContent(content, "text/html");
-			System.out.println("webEngine.getLocation(): " + webEngine.getLocation());
-			String fileName = "user_data/searched/charts";
-			for(String shortName : ChartMap.found.keySet())
-				fileName = fileName + "-" + shortName;
-			fileName = fileName + ".html";
-			writeFile(fileName, content);
+			boolean fileSaved = saveHTMLInFile(FILE_PATH, content);
+			System.out.println("all charts saved? -> " + fileSaved);
+		}else {
+			webEngine.loadContent(content, "text/html");
+			saveHTMLInFile(FILE_PATH, content);
+			
 		}
 		
-//		ChartCentreCalc chartsCentre = new ChartCentreCalc(ChartMap.map);
+//		ChartCentreCalculator chartsCentre = new ChartCentreCalculator(ChartMap.map);
 //		chartsCentre.chartsCentreCoords.forEach((s, c) -> System.out.println(s + ", " + c));
 		System.out.println(content);
 		
+	}
+	
+	private boolean saveHTMLInFile(String filePath, String content) {
+		String fileName = filePath + "charts";
+		Set<String> shortNames = ChartMap.display.keySet();
+		for(String shortName : shortNames) {
+			fileName = fileName + "-" + shortName;
+		}
+		if(fileName.length() > 240) {
+			List<Integer>  shortNamesList0_9Only = new ArrayList<>();
+			List<String>  shortNamesList0_9AndA_z = new ArrayList<>();
+			shortNames.forEach(n -> {if(!n.matches(".*[A-z].*"))
+										shortNamesList0_9Only.add(Integer.parseInt(n.trim()));
+						});
+			shortNames.forEach(n -> {if(n.matches(".*[A-z].*"))
+										shortNamesList0_9AndA_z.add(n);
+						});
+			Collections.sort(shortNamesList0_9Only);
+			Collections.sort(shortNamesList0_9AndA_z);
+			fileName = filePath + "charts_" 
+					+ shortNamesList0_9Only.get(0) + "-to-" + shortNamesList0_9AndA_z.get(shortNamesList0_9AndA_z.size() -1);
+		}
+		fileName = fileName + ".html";
+		writeFile(fileName, content);
+		return true;
 	}
 	
 	private static boolean writeFile(String filePath, String content) {
@@ -98,7 +130,7 @@ public class MapPaneController implements Initializable{
 		}
 		return isDone;
 	}
-	
+
 	private String contentError(String message1, String message2) {
 		String content = "<!DOCTYPE html>\r\n" + 
 				"<html>\r\n" + 

@@ -31,14 +31,22 @@ public class HTMLContent {
 			"      }\r\n" + 
 			"      h5 {\r\n" + 
 			"        color: white;\r\n" + 
-			"        font-family: Verdana;\r\n" + 
+			"        font-family: Arial;\r\n" + 
 			"        font-size: 15px\r\n" + 
+			"        }" +
+			"      #zoomLevel {\r\n" + 
+			"            background-color: skyblue; \r\n" + 
+			"            color: beige; \r\n" + 
+			"            text-align: center; \r\n" + 
+			"            font-size: 12px; \r\n" + 
+			"            font-family: Verdana;\r\n" + 
 			"      }\r\n" + 
 			"    </style>"
 			;
 		
 		htmlBlockEnd = "  </head>\r\n" + 
 				"  <body>\r\n" + 
+				"    <div id=\"zoomLevel\"></div>" +
 				"    <div id=\"map-canvas\"></div>\r\n" + 
 				"  </body>\r\n" + 
 				"</html>"

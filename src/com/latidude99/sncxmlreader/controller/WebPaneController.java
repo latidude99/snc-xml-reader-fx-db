@@ -586,10 +586,10 @@ public class WebPaneController implements Initializable{
 					new EventHandler<WorkerStateEvent>() {
 						@Override
 						public void handle(WorkerStateEvent t) {
-							ChartMap.map = chartMapLoadTask.getValue();
+							ChartMap.all = chartMapLoadTask.getValue();
 //					buttonSearchChart.setDisable(false);
 							System.out.println(
-									"+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.map.size());
+									"+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.all.size());
 						}
 					});
 			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED,

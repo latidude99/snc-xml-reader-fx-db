@@ -1,5 +1,7 @@
 package com.latidude99.sncxmlreader.web;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -40,7 +42,7 @@ public class ScriptBlock {
 	}
 	
 	private String createScriptMiddle(Map<String, StandardNavigationChart> charts) {
-		Map<String, String> scriptMapAllFoundCharts = new TreeMap<>();
+		Map<String, String> scriptMapAllFoundCharts = new LinkedHashMap<>();
 		StringBuilder sb = new StringBuilder();
 		
 		for(StandardNavigationChart chart : charts.values()) {		
@@ -55,7 +57,16 @@ public class ScriptBlock {
 			sb.append(varChartName +", ");
 		}
 		sb.append(" );\r\n\r\n");
+		sb.append(addZoomChangeListener());
+		sb.append(setBounds());
+
 		return sb.toString();
+	}
+	
+	// does not work in WebView
+	private String alertZoomLevel() {
+		String level = "window.alert(\"Zoom Level: \" + zoom);";
+		return level;
 	}
 	
 	private String createLatLngArray(Polygon polygon) {
@@ -100,8 +111,78 @@ public class ScriptBlock {
         return colours[randomNum];
 	}
 	
+	private Map<String, String> calculateZoomMaxMin(int scale) {
+		Map<String, String> maxminLevels = new HashMap<>();
+		if(scale < 50_000_000 && scale > 20_000_000) {
+			maxminLevels.put("max", "2");
+			maxminLevels.put("min", "1");
+		}else if(scale < 20_000_000 && scale > 10_000_000) {
+			maxminLevels.put("max", "3");
+			maxminLevels.put("min", "2");
+		}else if(scale < 10_000_000 && scale > 5_000_000) {
+			maxminLevels.put("max", "4");
+			maxminLevels.put("min", "3");
+		}
+		else if(scale < 5_000_000 && scale > 2_000_000) {
+			maxminLevels.put("max", "5");
+			maxminLevels.put("min", "3");
+		}
+		else if(scale < 2_000_000 && scale > 1_000_000) {
+			maxminLevels.put("max", "6");
+			maxminLevels.put("min", "3");
+		}
+		else if(scale < 1_000_000 && scale > 500_000) {
+			maxminLevels.put("max", "6");
+			maxminLevels.put("min", "4");
+		}
+		else if(scale < 500_000 && scale > 300_000) {
+			maxminLevels.put("max", "7");
+			maxminLevels.put("min", "5");
+		}
+		else if(scale < 300_000 && scale > 100_000) {
+			maxminLevels.put("max", "8");
+			maxminLevels.put("min", "5");
+		}
+		else if(scale < 100_000 && scale > 80_000) {
+			maxminLevels.put("max", "9");
+			maxminLevels.put("min", "6");
+		}
+		else if(scale < 80_000 && scale > 50_000) {
+			maxminLevels.put("max", "9");
+			maxminLevels.put("min", "6");
+		}
+		else if(scale < 50_000 && scale > 30_000) {
+			maxminLevels.put("max", "10");
+			maxminLevels.put("min", "7");
+		}
+		else if(scale < 30_000 && scale > 20_000) {
+			maxminLevels.put("max", "11");
+			maxminLevels.put("min", "8");
+		}
+		else if(scale < 20_000 && scale > 10_000) {
+			maxminLevels.put("max", "11");
+			maxminLevels.put("min", "8");
+		}
+		else if(scale < 10_000 && scale > 8_000) {
+			maxminLevels.put("max", "12");
+			maxminLevels.put("min", "9");
+		}
+		else if(scale < 8_000 && scale > 5_000) {
+			maxminLevels.put("max", "12");
+			maxminLevels.put("min", "9");
+		}else if(scale < 5_000 && scale > 1_000) {
+			maxminLevels.put("max", "13");
+			maxminLevels.put("min", "10");
+		}else {
+			maxminLevels.put("max", "5");
+			maxminLevels.put("min", "1");
+		}
+		return maxminLevels;
+	}
+	
+		
 	private Coordinates calculateLabelCoords(Polygon polygon) {
-		ChartCentreCalc calculator = new ChartCentreCalc();
+		ChartCentreCalculator calculator = new ChartCentreCalculator();
 		Coordinates centreCoords = new Coordinates();
 		centreCoords = calculator.calculatePolygonBottomLeftInside(polygon);
 		return centreCoords;
@@ -128,9 +209,11 @@ public class ScriptBlock {
 					String labelPosition = "new google.maps.LatLng(" + coordsLabel.latitude + ", "
 							+ coordsLabel.longitude + ")";
 					String fontSize = "16px";
-					String strokeWeight = "3";
-					String fillOpacity = "0.15";
-
+					String strokeWeight = "2";
+					String fillOpacity = "0.05";
+					String zoomMax = calculateZoomMaxMin(scaleNumber).get("max");
+					String zoomMin = calculateZoomMaxMin(scaleNumber).get("min");
+					
 					params.put("type", "chart");
 					params.put("chartVar", "chart" + chartVar);
 					params.put("chartNumber", chart.getShortName().trim());
@@ -142,11 +225,14 @@ public class ScriptBlock {
 					params.put("fontSize", fontSize);
 					params.put("strokeWeight", strokeWeight);
 					params.put("fillOpacity", fillOpacity);
-
+					params.put("zoomMax", zoomMax);
+					params.put("zoomMin", zoomMin);
+					
 					String chartNum = createChartNumHTML(params);
 					String label = createChartLabel(params);
-					String chartNumWithLabel = chartNum + label;
-//					System.out.println("chartNum: " + chartNum);
+					String pushLine = addPushMarkerIntoArray(params);
+					String chartNumWithLabel = chartNum + label + pushLine;
+//					System.out.println("chartNum: " + chartNum + "min / max: " + zoomMin + " / " + zoomMax);
 					scriptMap.put(params.get("chartVar"), chartNumWithLabel);
 				}
 			}
@@ -171,7 +257,9 @@ public class ScriptBlock {
 						String fontSize = "12px";
 						String strokeWeight = "1";
 						String fillOpacity = "0.1";
-
+						String zoomMax = calculateZoomMaxMin(scaleNumber).get("max");
+						String zoomMin = calculateZoomMaxMin(scaleNumber).get("min");
+						
 						params.put("type", "panel");
 						params.put("chartVar", chartVar);
 						params.put("chartNumber", chart.getShortName());
@@ -183,13 +271,14 @@ public class ScriptBlock {
 						params.put("fontSize", fontSize);
 						params.put("strokeWeight", strokeWeight);
 						params.put("fillOpacity", fillOpacity);
-					
+						params.put("zoomMax", zoomMax);
+						params.put("zoomMin", zoomMin);
+						
 						String panelNum = createChartNumHTML(params);
 						String label = createChartLabel(params);
 						String pushLine = addPushMarkerIntoArray(params);
 						String panelNumWithLabel = panelNum + label + pushLine;
 //						System.out.println("chartNum: " + panelNumWithLabel);
-
 						scriptMap.put(params.get("chartVar"), panelNumWithLabel);
 					}
 				}
@@ -215,6 +304,8 @@ public class ScriptBlock {
 				"                type: '" + params.get("type") + "',\r\n" + 
 				"                name: '" + params.get("chartName") + "',\r\n" + 
 				"                scale: '" + params.get("chartScale") + "',\r\n" + 
+				"                zoomMax: '" + params.get("zoomMax") + "',\r\n" + 
+				"                zoomMin: '" + params.get("zoomMin") + "',\r\n" + 
 				"                map: map\r\n" + 
 				"            });\r\n" + 
 				"\r\n" + 
@@ -232,6 +323,8 @@ public class ScriptBlock {
 				"                    icon: \" \",\r\n" + 
 				"                    draggable: true,\r\n" +
 				"                    visible: true,\r\n" +
+				"                    zoomMax: '" + params.get("zoomMax") + "',\r\n" + 
+				"                    zoomMin: '" + params.get("zoomMin") + "',\r\n" + 
 				"                    label: {\r\n" + 
 				"                      text: '" + params.get("chartNumber") + "',\r\n" + 
 				"                      color: '" + params.get("colour") + "',\r\n" + 
@@ -248,6 +341,68 @@ public class ScriptBlock {
 	private String addPushMarkerIntoArray(Map<String, String> params) {
 		String pushLine = "            markers.push(marker_" + params.get("chartVar") + ");\r\n";
 		return pushLine;
+	}
+	
+	private String addZoomChangeListener() {
+		String listener = "            google.maps.event.addListener(map, 'zoom_changed', function() {\r\n" + 
+				"                var zoom = map.getZoom();\r\n" + 
+				"        \r\n" + 
+				"                for (i = 0; i < polygons.length; i++) {\r\n" + 
+				"                       if (zoom < polygons[i].zoomMin) \r\n" + 
+				"                           polygons[i].setMap(null);\r\n" + 
+				"                       else if (zoom > polygons[i].zoomMax) \r\n" + 
+				"                           polygons[i].setMap(null);\r\n" + 
+				"                       else \r\n" + 
+				"                           polygons[i].setMap(map);\r\n" + 
+				"                   }\r\n" + 
+				"               for (i = 0; i < markers.length; i++) {\r\n" + 
+				"                     \r\n" + 
+				"                    if (zoom < markers[i].zoomMin) \r\n" + 
+				"                        markers[i].setMap(null);\r\n" + 
+				"                    else if (zoom > markers[i].zoomMax) \r\n" + 
+				"                       markers[i].setMap(null);\r\n" + 
+				"                    else \r\n" + 
+				"                       markers[i].setMap(map);\r\n" + 
+				"                   }\r\n" + 
+				"                   document.getElementById(\"zoomLevel\").innerHTML = 'Zoom Level: ' + zoom;\r\n" + 
+				"            });\r\n" 
+				;
+		return listener;
+	}
+	
+	// used to set zoom levels for markers independently from polygons, not used for now
+	private String addZoomChangeMarker() {
+		String markerListener = 
+				"\r\n" + 
+				"            google.maps.event.addListener(map, 'zoom_changed', function() {\r\n" + 
+				"                var zoom = map.getZoom();\r\n" + 
+				"                   for (i = 0; i < markers.length; i++) {\r\n"
+				+ "                      markers[i].setVisible(zoom > 6);\r\n" + 
+				"                   }\r\n" + 
+				"            });\r\n" + 
+				"            \r\n" + 
+				"            \r\n" ;
+		return markerListener;
+	}
+	
+	private String setBounds() {
+		String bounds = 
+				"\r\n"+
+						"            var bounds= new google.maps.LatLngBounds();\r\n" + 
+						"            for (var i=0; i < 1; i++){\r\n" + 
+						"                var paths = polygons[i].getPaths();\r\n" + 
+						"                paths.forEach(function(path){\r\n" + 
+						"                   var ar = path.getArray();\r\n" + 
+						"                   for(var i=0, l = ar.length; i <l; i++){\r\n" + 
+						"                      bounds.extend(ar[i]);\r\n" + 
+						"                   }\r\n" + 
+						"                })\r\n" + 
+						"            }\r\n" + 
+						"            map.fitBounds(bounds)\r\n" + 
+						"            map.setCenter(bounds.getCenter());\r\n" + 
+						"        }\r\n\r\n"
+						;
+		return bounds;
 	}
 	
 	private String setScriptStart() {
@@ -275,27 +430,7 @@ public class ScriptBlock {
 	}
 	
 	private String setScriptEnd() {
-		scriptEnd = "\r\n" + 
-				"            google.maps.event.addListener(map, 'zoom_changed', function() {\r\n" + 
-				"                var zoom = map.getZoom();\r\n" + 
-				"                   for (i = 0; i < markers.length; i++) {\r\n"
-				+ "                      markers[i].setVisible(zoom > 6);\r\n" + 
-				"                   }\r\n" + 
-				"            });\r\n" + 
-				"            \r\n" + 
-				"            var bounds= new google.maps.LatLngBounds();\r\n" + 
-				"            for (var i=0; i < polygons.length; i++){\r\n" + 
-				"                var paths = polygons[i].getPaths();\r\n" + 
-				"                paths.forEach(function(path){\r\n" + 
-				"                   var ar = path.getArray();\r\n" + 
-				"                   for(var i=0, l = ar.length; i <l; i++){\r\n" + 
-				"                      bounds.extend(ar[i]);\r\n" + 
-				"                   }\r\n" + 
-				"                })\r\n" + 
-				"            }\r\n" + 
-				"            map.fitBounds(bounds)\r\n" + 
-				"            map.setCenter(bounds.getCenter());\r\n" + 
-				"        }\r\n" + 
+		scriptEnd = "\r\n"+
 				"\r\n" + 
 				"        function showInfo(event) {\r\n" + 
 				"            var vertices = this.getPath();\r\n" + 
