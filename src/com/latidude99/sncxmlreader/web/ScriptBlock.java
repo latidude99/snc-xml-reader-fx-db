@@ -116,68 +116,73 @@ public class ScriptBlock {
 		if(scale < 50_000_000 && scale > 20_000_000) {
 			maxminLevels.put("max", "2");
 			maxminLevels.put("min", "1");
-		}else if(scale < 20_000_000 && scale > 10_000_000) {
+		}else if(scale < 20_000_001 && scale > 10_000_000) {
 			maxminLevels.put("max", "3");
 			maxminLevels.put("min", "2");
-		}else if(scale < 10_000_000 && scale > 5_000_000) {
+		}else if(scale < 10_000_001 && scale > 5_000_000) {
 			maxminLevels.put("max", "4");
-			maxminLevels.put("min", "3");
+			maxminLevels.put("min", "2");
 		}
-		else if(scale < 5_000_000 && scale > 2_000_000) {
-			maxminLevels.put("max", "5");
-			maxminLevels.put("min", "3");
+		else if(scale < 5_000_001 && scale > 2_000_000) {
+			maxminLevels.put("max", "4");
+			maxminLevels.put("min", "2");
 		}
-		else if(scale < 2_000_000 && scale > 1_000_000) {
-			maxminLevels.put("max", "6");
-			maxminLevels.put("min", "3");
-		}
-		else if(scale < 1_000_000 && scale > 500_000) {
+		else if(scale < 2_000_001 && scale > 1_000_000) {
 			maxminLevels.put("max", "6");
 			maxminLevels.put("min", "4");
 		}
-		else if(scale < 500_000 && scale > 300_000) {
+		else if(scale < 1_000_001 && scale > 500_000) {
 			maxminLevels.put("max", "7");
 			maxminLevels.put("min", "5");
 		}
-		else if(scale < 300_000 && scale > 100_000) {
+		else if(scale < 500_001 && scale > 300_000) {
 			maxminLevels.put("max", "8");
-			maxminLevels.put("min", "5");
-		}
-		else if(scale < 100_000 && scale > 80_000) {
-			maxminLevels.put("max", "9");
 			maxminLevels.put("min", "6");
 		}
-		else if(scale < 80_000 && scale > 50_000) {
-			maxminLevels.put("max", "9");
-			maxminLevels.put("min", "6");
-		}
-		else if(scale < 50_000 && scale > 30_000) {
+		else if(scale < 300_001 && scale > 100_000) {
 			maxminLevels.put("max", "10");
 			maxminLevels.put("min", "7");
 		}
-		else if(scale < 30_000 && scale > 20_000) {
+		else if(scale < 100_001 && scale > 80_000) {
 			maxminLevels.put("max", "11");
 			maxminLevels.put("min", "8");
 		}
-		else if(scale < 20_000 && scale > 10_000) {
-			maxminLevels.put("max", "11");
-			maxminLevels.put("min", "8");
+		else if(scale < 80_001 && scale > 50_000) {
+			maxminLevels.put("max", "1");
+			maxminLevels.put("min", "7");
 		}
-		else if(scale < 10_000 && scale > 8_000) {
-			maxminLevels.put("max", "12");
-			maxminLevels.put("min", "9");
-		}
-		else if(scale < 8_000 && scale > 5_000) {
-			maxminLevels.put("max", "12");
-			maxminLevels.put("min", "9");
-		}else if(scale < 5_000 && scale > 1_000) {
+		else if(scale < 50_001 && scale > 30_000) {
 			maxminLevels.put("max", "13");
+			maxminLevels.put("min", "8");
+		}
+		else if(scale < 30_001 && scale > 20_000) {
+			maxminLevels.put("max", "22");
+			maxminLevels.put("min", "8");
+		}
+		else if(scale < 20_001 && scale > 10_000) {
+			maxminLevels.put("max", "22");
+			maxminLevels.put("min", "9");
+		}
+		else if(scale < 10_001 && scale > 8_000) {
+			maxminLevels.put("max", "22");
+			maxminLevels.put("min", "9");
+		}
+		else if(scale < 8_001 && scale > 5_000) {
+			maxminLevels.put("max", "22");
+			maxminLevels.put("min", "9");
+		}else if(scale < 5_001 && scale > 1_000) {
+			maxminLevels.put("max", "22");
 			maxminLevels.put("min", "10");
 		}else {
 			maxminLevels.put("max", "5");
 			maxminLevels.put("min", "1");
 		}
 		return maxminLevels;
+	}
+	
+	private String setZIndex(String polyName, String zIndex) {
+		String index = "\n\n            " + polyName + ".setZIndex(" + zIndex + ");\n\n";
+		return index;
 	}
 	
 		
@@ -231,7 +236,8 @@ public class ScriptBlock {
 					String chartNum = createChartNumHTML(params);
 					String label = createChartLabel(params);
 					String pushLine = addPushMarkerIntoArray(params);
-					String chartNumWithLabel = chartNum + label + pushLine;
+//					String zIndex = setZIndex(params.get("chartVar"), zoomMax);
+					String chartNumWithLabel = chartNum + label +  pushLine;
 //					System.out.println("chartNum: " + chartNum + "min / max: " + zoomMin + " / " + zoomMax);
 					scriptMap.put(params.get("chartVar"), chartNumWithLabel);
 				}
@@ -277,6 +283,7 @@ public class ScriptBlock {
 						String panelNum = createChartNumHTML(params);
 						String label = createChartLabel(params);
 						String pushLine = addPushMarkerIntoArray(params);
+//						String zIndex = setZIndex(params.get("chartVar"), zoomMax);
 						String panelNumWithLabel = panelNum + label + pushLine;
 //						System.out.println("chartNum: " + panelNumWithLabel);
 						scriptMap.put(params.get("chartVar"), panelNumWithLabel);
@@ -297,6 +304,7 @@ public class ScriptBlock {
 								 params.get("latlngArray") + "],\r\n" + 
 				"                strokeColor: '" + params.get("colour") + "',\r\n" + 
 				"                strokeOpacity: 0.8,\r\n" + 
+				"                clickable: true,\r\n" +
 				"                strokeWeight: '" + params.get("strokeWeight") + "',\r\n" + 
 				"                fillColor: '" + params.get("colour") + "',\r\n" + 
 				"                fillOpacity: '" + params.get("fillOpacity") + "',\r\n" + 
@@ -306,7 +314,8 @@ public class ScriptBlock {
 				"                scale: '" + params.get("chartScale") + "',\r\n" + 
 				"                zoomMax: '" + params.get("zoomMax") + "',\r\n" + 
 				"                zoomMin: '" + params.get("zoomMin") + "',\r\n" + 
-				"                map: map\r\n" + 
+				"                map: map\r\n," + 
+				"                zIndex: '" + params.get("zoomMax") + "'\r\n" + 
 				"            });\r\n" + 
 				"\r\n" + 
 				"            google.maps.event.addListener(" + params.get("chartVar") + ", 'click', showInfo);\r\n" + 
@@ -321,7 +330,8 @@ public class ScriptBlock {
 				"                    map: map,\r\n" + 
 				"                    position: " + params.get("labelPosition") + ",\r\n" + 
 				"                    icon: \" \",\r\n" + 
-				"                    draggable: true,\r\n" +
+				"                    draggable: false,\r\n" +
+				"                    clickable: true,\r\n" +
 				"                    visible: true,\r\n" +
 				"                    zoomMax: '" + params.get("zoomMax") + "',\r\n" + 
 				"                    zoomMin: '" + params.get("zoomMin") + "',\r\n" + 

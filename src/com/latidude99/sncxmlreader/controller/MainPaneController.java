@@ -93,6 +93,11 @@ public class MainPaneController implements Initializable{
 	private static String FILE_PATH = "user_data/snc_catalogue.xml";
 	private static String DB_PATH = "user_data/snc_catalogue.db";
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
+	private static final String SINGLE = "=";
+	private static final String SMALLER_SCALE = "-";
+	private static final String LARGER_SCALE ="+";
+	private static final String RANGE = "range";
+	
 	
 	ObjectRepository<StandardNavigationChart> chartRepository;
     ObjectRepository<BaseFileMetadata> metaRepository;
@@ -581,30 +586,52 @@ public class MainPaneController implements Initializable{
 	}
 		
 	private void searchCharts() {
+		String input = textSearchChart.getText().trim();;
+		String inputRaw = input;
+		String searchType = inputRaw.substring(inputRaw.length() - 1, inputRaw.length());
+		if(searchType.equals(SINGLE) || searchType.equals(SMALLER_SCALE) || searchType.equals(LARGER_SCALE))
+			input = inputRaw.substring(0, inputRaw.length() - 1);
+		
 		if (ChartMap.all == null) {
 
 			MessageBox.show("The UKHO Standard Navigation Chart catalogue has not been loaded into memory yet.\n"
 					+ "          Load the catalogue first and then search for charts", "Info");
 			return;
 		}
-		if("all".equals(textSearchChart.getText().trim().toLowerCase())) {
+		if("all".equals(input.toLowerCase())) {
 			ChartMap.display = ChartMap.all;
         	textResult.setText("All charts loaded and ready to be displayed.\r\n\r\n"
         			+ "It may take a minute or two especially if your Internet connection is slow\r\n"
         			+ "or your computer does not have sufficient amount of RAM");
         	return;
         }
+		
 		boolean fullInfo = checkboxInfo.isSelected();
 		textResult.clear();
-		String searchInput = textSearchChart.getText().trim();
-		chartSearchTask = new ChartSearchTask(database, searchInput, fullInfo);
+		
+		System.out.println("searchType: " + searchType + ", " + "input: " + input);
+		
+		switch(searchType) {
+			case SINGLE:
+				chartSearchTask = new ChartSearchTask(database, input, fullInfo, SINGLE);
+				break;
+			case SMALLER_SCALE:
+				chartSearchTask = new ChartSearchTask(database, input, fullInfo, SMALLER_SCALE);
+				break;
+			case LARGER_SCALE:
+				chartSearchTask = new ChartSearchTask(database, input, fullInfo, LARGER_SCALE);
+				break;
+			default:
+				chartSearchTask = new ChartSearchTask(database, input, fullInfo, RANGE);
+		}
+				
 		
 		// same as chartSearchTask but on the main app thread		
 //		textResult.setText(chartUtils.displayChartRange(DB_PATH, searchInput, fullInfo)); 
-		
+			
 		textResult.textProperty().bind(chartSearchTask.messageProperty());
 		progressSearch.progressProperty().bind(chartSearchTask.progressProperty());
-		
+			
 		chartSearchTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
 				new EventHandler<WorkerStateEvent>() {
 			@Override
@@ -623,10 +650,11 @@ public class MainPaneController implements Initializable{
 		});
 		
 		Thread thread = new Thread(chartSearchTask);
-        thread.setDaemon(true);
-        thread.start();
+	    thread.setDaemon(true);
+	    thread.start();
 	}
-	
+		
+
 	// not used now
 	private void chartsLoadedCheck() {
 		

@@ -49,7 +49,7 @@
                   <Insets />
                </opaqueInsets>
             </TextArea>
-            <Button id="button-clear-search" fx:id="buttonClearSearch" alignment="TOP_CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="712.0" text="C L E A R" textAlignment="CENTER" textFill="#f10707" VBox.vgrow="ALWAYS">
+            <Button id="button-clear-search" fx:id="buttonClearSearch" alignment="TOP_CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="712.0" text="CLEAR SEARCH / UPDATE CATALOGUE INFO" textAlignment="CENTER" textFill="#f10707" VBox.vgrow="ALWAYS">
                <font>
                   <Font size="13.0" />
                </font>

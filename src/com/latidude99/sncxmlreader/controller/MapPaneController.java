@@ -98,8 +98,13 @@ public class MapPaneController implements Initializable{
 						});
 			Collections.sort(shortNamesList0_9Only);
 			Collections.sort(shortNamesList0_9AndA_z);
-			fileName = filePath + "charts_" 
-					+ shortNamesList0_9Only.get(0) + "-to-" + shortNamesList0_9AndA_z.get(shortNamesList0_9AndA_z.size() -1);
+			if(shortNamesList0_9AndA_z != null && !shortNamesList0_9AndA_z.isEmpty()) {
+				fileName = filePath + "charts_" 
+						+ shortNamesList0_9Only.get(0) + "-to-" + shortNamesList0_9AndA_z.get(shortNamesList0_9AndA_z.size() -1);
+			}else {
+				fileName = filePath + "charts_" 
+						+ shortNamesList0_9Only.get(0) + "-to-" + shortNamesList0_9Only.get(shortNamesList0_9Only.size() -1);
+			}		
 		}
 		fileName = fileName + ".html";
 		writeFile(fileName, content);

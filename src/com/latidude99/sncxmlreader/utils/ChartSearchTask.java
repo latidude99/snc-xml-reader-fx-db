@@ -15,11 +15,16 @@ import com.latidude99.sncxmlreader.web.ChartProximityCalculator;
 import javafx.concurrent.Task;
 
 public class ChartSearchTask extends Task<String> {
+	private static final String SINGLE = "=";
+	private static final String SMALLER_SCALE = "-";
+	private static final String LARGER_SCALE ="+";
+	private static final String RANGE = "range";
 	private Nitrite database = Database.databaseInstance;
 	private ObjectRepository<StandardNavigationChart> chartRepository;
 	ChartUtils chartUtils = new ChartUtils();
 	private String input;
 	private boolean fullInfo;
+	private String searchType;
 	long count;	
 	long searchedNum;
 	
@@ -29,9 +34,10 @@ public class ChartSearchTask extends Task<String> {
 		this.fullInfo = fullInfo;
 	}
 
-	public ChartSearchTask(Nitrite database, String input, boolean fullInfo) {
+	public ChartSearchTask(Nitrite database, String input, boolean fullInfo, String searchType) {
 		this.input = input;
 		this.fullInfo = fullInfo;
+		this.searchType = searchType;
     }
 
 
@@ -55,7 +61,7 @@ public class ChartSearchTask extends Task<String> {
 		StringBuilder sb = new StringBuilder();
 		Set<String> numbersSearched = FormatUtils.parseInput(input);
 		System.out.println(numbersSearched);
-		Map<String, StandardNavigationChart> chartsFound = findChartsFromRepository(numbersSearched);
+		Map<String, StandardNavigationChart> chartsFound = findChartsFromRepository(numbersSearched, searchType);
         
 		sb.append(chartUtils.printSearchSummary(chartsFound, numbersSearched));
 		
@@ -74,7 +80,7 @@ public class ChartSearchTask extends Task<String> {
 	
 	
 	
-	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched){
+	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched, String searchType){
 //		System.out.println(database.toString());
 //		chartRepository = database.getRepository(StandardNavigationChart.class);
 		ChartProximityCalculator chartProximityCalculator = new ChartProximityCalculator();
@@ -103,8 +109,16 @@ public class ChartSearchTask extends Task<String> {
 		ChartMap.found = chartsFound;
 		if(chartsFound.size() > 1) {
 			ChartMap.display = chartsFound;
-		}else {
-			chartsProximal = chartProximityCalculator.totalChartsOverlapMap(chartsFound, ChartMap.all);
+		}else if(SINGLE.equals(searchType)) {
+			ChartMap.display = chartsFound;
+		}else if(SMALLER_SCALE.equals(searchType)) {
+			chartsProximal = chartProximityCalculator.totalChartsProximal(chartsFound, ChartMap.all, SMALLER_SCALE);
+			ChartMap.display = chartsProximal;
+		}else if(LARGER_SCALE.equals(searchType)) {
+			chartsProximal = chartProximityCalculator.totalChartsProximal(chartsFound, ChartMap.all, LARGER_SCALE);
+			ChartMap.display = chartsProximal;
+		}else if(RANGE.equals(searchType)){
+			chartsProximal = chartProximityCalculator.totalChartsProximal(chartsFound, ChartMap.all, RANGE);
 			ChartMap.display = chartsProximal;
 		}
 			

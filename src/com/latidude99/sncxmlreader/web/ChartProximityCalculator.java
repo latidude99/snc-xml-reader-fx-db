@@ -16,53 +16,119 @@ import uk.me.jstott.jcoord.LatLng;
 //import uk.me.jstott.jcoord.LatLng;
 
 public class ChartProximityCalculator {
+	private static final String SMALLER_SCALE = "-";
+	private static final String LARGER_SCALE ="+";
+	private static final String RANGE = "range";
+	private static final int DISTANCE = 500;
+	private static final double FACTOR = 0.8;
+	
 	ChartCentreCalculator chartCentreCalculator = new ChartCentreCalculator();
 	public Map<String, StandardNavigationChart> chartsOverlaping;
 	
 	public ChartProximityCalculator() {}
 	
-	public Map<String, StandardNavigationChart> totalChartsOverlapMap(Map<String, StandardNavigationChart> chartsInputFound,
-																			Map<String, StandardNavigationChart> chartsToCheck){
+	/*******************************************************************************************************/
+	
+	public Map<String, StandardNavigationChart> totalChartsProximal(Map<String, StandardNavigationChart> chartsInputFound,
+																			Map<String, StandardNavigationChart> chartsToCheck,
+																			String searchType){
 		Map<String, StandardNavigationChart> chartsProximalTotal = new LinkedHashMap<>();
 		Map<String, StandardNavigationChart> chartsProximalSingle = new LinkedHashMap<>();
 		chartsProximalTotal.putAll(chartsInputFound);
-		for(StandardNavigationChart chartInputFound : chartsInputFound.values()) {
-			chartsProximalSingle = singleChartOverlapMap(chartInputFound, chartsToCheck);
-			chartsProximalTotal.putAll(chartsProximalSingle);
+		switch(searchType) {
+			case RANGE:
+				for(StandardNavigationChart chartInputFound : chartsInputFound.values()) {
+					chartsProximalSingle = singleChartRange(chartInputFound, chartsToCheck);
+					chartsProximalTotal.putAll(chartsProximalSingle);
+				}
+				break;
+			case SMALLER_SCALE:
+				for(StandardNavigationChart chartInputFound : chartsInputFound.values()) {
+					chartsProximalSingle = singleChartSmallerScale(chartInputFound, chartsToCheck);
+					chartsProximalTotal.putAll(chartsProximalSingle);
+				}
+				break;
+			case LARGER_SCALE:
+				for(StandardNavigationChart chartInputFound : chartsInputFound.values()) {
+					chartsProximalSingle = singleChartLargerScale(chartInputFound, chartsToCheck);
+					chartsProximalTotal.putAll(chartsProximalSingle);
+				}
 		}
 		return chartsProximalTotal;
 	}
 	
 	/*******************************************************************************************************/
 	
-	public Map<String, StandardNavigationChart> singleChartOverlapMap(StandardNavigationChart chartInputFound, 
+	public Map<String, StandardNavigationChart> singleChartRange(StandardNavigationChart chartInputFound, 
 														Map<String, StandardNavigationChart> chartsToCheck){
-		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();
-//		chartsProximal.put(chartSearched.getShortName(), chartInputFound);
+		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();		
 		for(StandardNavigationChart chartToCheck : chartsToCheck.values()) {
-			
-			if(isOverapping(chartInputFound, chartToCheck) 
-					|| isWithinDistance(1500, chartInputFound, chartToCheck)) {
-				
-//				System.out.println("isOverapping(chartInputFound, chartToCheck) " + isOverapping(chartInputFound, chartToCheck));
+			if(isOverapping(chartInputFound, chartToCheck) 	|| isWithinDistance(DISTANCE, chartInputFound, chartToCheck)) {
 				chartsProximal.put(chartToCheck.getShortName(), chartToCheck);
 			}
-//			System.out.println("chartsProximal " + chartsProximal.size());
 		}
 		return chartsProximal;
 	}
 	
 
 	/*******************************************************************************************************/
+	
+	public Map<String, StandardNavigationChart> singleChartSmallerScale(StandardNavigationChart chartInputFound, 
+														Map<String, StandardNavigationChart> chartsToCheck){
+		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();		
+		for(StandardNavigationChart chartToCheck : chartsToCheck.values()) {
+			if(hasSmallerScale(FACTOR, chartInputFound, chartToCheck) && isWithinDistance(DISTANCE * 5, chartInputFound, chartToCheck)) {
+				chartsProximal.put(chartToCheck.getShortName(), chartToCheck);
+			}
+		}
+		return chartsProximal;
+	}
 
-	private boolean isWithinScale(int factor, StandardNavigationChart chart1, StandardNavigationChart chart2) {
+
+	/*******************************************************************************************************/
+
+	
+	public Map<String, StandardNavigationChart> singleChartLargerScale(StandardNavigationChart chartInputFound, 
+			Map<String, StandardNavigationChart> chartsToCheck){
+		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();		
+		for(StandardNavigationChart chartToCheck : chartsToCheck.values()) {
+			if(hasLargerScale(FACTOR, chartInputFound, chartToCheck) && isWithinDistance(DISTANCE * 5, chartInputFound, chartToCheck)) {
+				chartsProximal.put(chartToCheck.getShortName(), chartToCheck);
+			}
+		}
+		return chartsProximal;
+	}
+
+
+	/*******************************************************************************************************/
+
+	
+	private boolean isWithinScale(double factor, StandardNavigationChart chart1, StandardNavigationChart chart2) {
 		int scaleChart1 = getMinScale(chart1);
 		int scaleChart2 = getMinScale(chart2);
-		System.out.println(scaleChart1 + ", " + scaleChart2);
 		if((scaleChart1 * factor > scaleChart2) || (scaleChart1 / factor < scaleChart2))
 			return true;
 		else	
 			return false;
+	}
+	
+	private boolean hasSmallerScale(double factor, StandardNavigationChart chart1, StandardNavigationChart chart2) {
+		boolean result = false;
+		int scaleChart1 = getMinScale(chart1);
+		int scaleChart2 = getMinScale(chart2);
+		if(scaleChart1 * factor < scaleChart2)
+			result = true;
+		return result;
+	}
+	
+	private boolean hasLargerScale(double factor, StandardNavigationChart chart1, StandardNavigationChart chart2) {
+		boolean result = false;
+		int scaleChart1 = getMinScale(chart1);
+		int scaleChart2 = getMinScale(chart2);
+		System.out.println(scaleChart1 + ", " + scaleChart2);
+		if(scaleChart1 > scaleChart2 * factor)
+			result = true;
+		return result;
 	}
 	
 	
@@ -84,12 +150,7 @@ public class ChartProximityCalculator {
 				|| (chart1LatMax < chart2LatMin) 
 				|| (chart1LngMin > chart2LngMax) 
 				|| (chart1LngMax < chart2LngMin)) {
-/*			System.out.print("\n\nchart1LatMin < chart2LatMax: " + chart1LatMin + " < " + chart2LatMax + " || ");
-			System.out.println("chart1LatMax > chart2LatMin: " + chart1LatMax + " > " + chart2LatMin);
-			System.out.println("&&");
-			System.out.print("chart1LngMin < chart2LngMax: " + chart1LngMin + " < " + chart2LngMax + " || ");
-			System.out.println("chart1LngMax > chart2LngMin: " + chart1LngMax + " > " + chart2LngMin);
-*/			return false;
+			return false;
 		}
 		else
 			return true;
@@ -164,7 +225,6 @@ public class ChartProximityCalculator {
 		LatLng latlng2 = new LatLng(chartCentreCalculator.calculateChartCentre(chart2).latitude,
 									chartCentreCalculator.calculateChartCentre(chart2).longitude);
 		double distance = latlng1.distance(latlng2);
-//		System.out.println("Distance" + distance);
 		return distance;
 	}
 	
@@ -174,17 +234,17 @@ public class ChartProximityCalculator {
 		
 		if(chart.getMetadata().getScale() != null && !"".equals(chart.getMetadata().getScale().trim())) { 
 			scale = Integer.parseInt(chart.getMetadata().getScale().trim());
-			System.out.println("scaleMain: " + scale);
 		}
-		if(chart.getMetadata().getPanels() != null) {
+		else if(chart.getMetadata().getPanels() != null) {
 			for(Panel panel : chart.getMetadata().getPanels()) {
-				panelScale = Integer.parseInt(panel.getPanelScale().trim());
-				System.out.println("panelScale: " + panelScale);
-				if(scale < panelScale)
-					scale = panelScale;
+				if(panel.getPanelScale() !=null && !panel.getPanelScale().trim().equals("")) {
+					panelScale = Integer.parseInt(panel.getPanelScale().trim());
+					if(scale < panelScale)
+						scale = panelScale;
+				}	
 			}	
 		}
-		System.out.println("scale returned: " + scale);
+		
 		return scale;
 	}
 	
