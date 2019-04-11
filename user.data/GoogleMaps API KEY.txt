@@ -1,0 +1,3 @@
+Please copy the key into config.properties file in place of "no default key" text.
+
+AIzaSyC_wf8M3SFAJrr6jy_4nK04jUzVgw-TpEY

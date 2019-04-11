@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/**Copyright (C) 2017  Piotr Czapik.
+* @author Piotr Czapik
+* @version 2.0
+* 
+*  This file is part of SncXmlReader.
+*  Subs Converter is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+* 
+*  SncXmlReader is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+* 
+*  You should have received a copy of the GNU General Public License
+*  along with SncXmlReader.  If not, see <http://www.gnu.org/licenses/>
+*  or write to: latidude99@gmail.com
+*/
+-->
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.latidude99.sncxmlreader.controller.MainPaneController">
+   
+   <top>
+		<VBox BorderPane.alignment="CENTER">
+	         <children>
+			      <fx:include fx:id="inputPane" source="inputPane.fxml" />
+			      <fx:include fx:id="searchPane" source="searchPane.fxml" />
+			      <fx:include fx:id="cataloguePane" source="cataloguePane.fxml" />
+			</children>
+		</VBox>
+   </top>
+   
+   
+   <center>
+      <fx:include fx:id="contentPane" source="contentPane.fxml" />
+   </center>
+   
+</BorderPane>
