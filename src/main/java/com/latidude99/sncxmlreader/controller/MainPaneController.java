@@ -201,6 +201,7 @@ public class MainPaneController implements Initializable {
         metaRepository = database.getRepository(BaseFileMetadata.class);
         appDTORepository = database.getRepository(AppDTO.class);
         System.out.println("appDTORepository.find().size(): " + appDTORepository.find().size());
+        dbFilesCleanup(dbPath);
     }
 
     /*
@@ -669,6 +670,30 @@ public class MainPaneController implements Initializable {
                 });
 
         Thread thread = new Thread(chartsLoadedCheckTask);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void dbFilesCleanup(String dbPath){
+
+        FileCleanupTask fileCleanupTask = new FileCleanupTask(dbPath);
+
+        fileCleanupTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
+                new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent t) {
+
+                    }
+                });
+        fileCleanupTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED,
+                new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent t) {
+
+                    }
+                });
+
+        Thread thread = new Thread(fileCleanupTask);
         thread.setDaemon(true);
         thread.start();
     }

@@ -19,7 +19,7 @@ public class DownloadTask extends Task<Void> {
     private String downloadLinkBase;
     
 	LocalDateTime localDateTime;
-	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm");
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
     
 
     public DownloadTask(String downloadLinkBase, String downloadPageString) {

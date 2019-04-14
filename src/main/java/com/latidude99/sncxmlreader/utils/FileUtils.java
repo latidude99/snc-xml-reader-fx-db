@@ -18,7 +18,7 @@ public class FileUtils {
 
 
 	public static String readXMLPath(String configPath, String defaultXmlPath) {
-		String xmlFileProperty = "xml_file_path";
+		String xmlFileProperty = ConfigPaths.XML_FILE_PROPERTY.getPath();
 		Map<String, String> properties = new HashMap<>();
 		properties = readConfig(configPath);
 		String xmlFilePath = properties.getOrDefault(xmlFileProperty, defaultXmlPath);
@@ -26,7 +26,7 @@ public class FileUtils {
 	}
 	
 	public static String readDBPath(String configPath, String defaultDbPath) {
-		String dbFileProperty = "db_file_path";
+		String dbFileProperty = ConfigPaths.DB_FILE_PROPERTY.getPath();
 		Map<String, String> properties = new HashMap<>();
 		properties = readConfig(configPath);
 		String dbFilePath = properties.getOrDefault(dbFileProperty, defaultDbPath);
@@ -34,7 +34,7 @@ public class FileUtils {
 	}
 	
 	public static String readApiKey(String configPath, String defaultApiKey) {
-		String apiKeyProperty = "api_key";
+		String apiKeyProperty = ConfigPaths.API_KEY_PROPERTY.getPath();
 		Map<String, String> properties = new HashMap<>();
 		properties = readConfig(configPath);
 		ConfigPaths.API_KEY.setPath(properties.getOrDefault(apiKeyProperty, defaultApiKey));
@@ -42,9 +42,9 @@ public class FileUtils {
 	}
 
 	public static Map<String, String> readConfig(String configPath) {
-		String xmlFileProperty = "xml_file_path";
-		String dbFileProperty = "db_file_path";
-		String apiKeyProperty = "api_key";
+		String xmlFileProperty = ConfigPaths.XML_FILE_PROPERTY.getPath();
+		String dbFileProperty = ConfigPaths.DB_FILE_PROPERTY.getPath();
+		String apiKeyProperty = ConfigPaths.API_KEY_PROPERTY.getPath();
 		Map<String, String> properties = new HashMap<>();
 		
 		BufferedReader br = null;
@@ -65,18 +65,18 @@ public class FileUtils {
 	            if(!line.startsWith("#") && (!line.equals(""))) {
 	            	if(line.contains("xml_file_path")) {
 	            		names = line.split("=");
-	            		System.out.println("xml: " + names[1]);
-		            	properties.put(xmlFileProperty, pathCleanup(names[1]));
+	            		if(names.length > 1)
+		            		properties.put(xmlFileProperty, pathCleanup(names[1]));
 	            	}
 	            	if(line.contains("db_file_path")) {
 	            		names = line.split("=");
-	            		System.out.println("db: " + names[1]);
-		            	properties.put(dbFileProperty, pathCleanup(names[1]));
+						if(names.length > 1)
+		            		properties.put(dbFileProperty, pathCleanup(names[1]));
 	            	}
 					if (line.contains("api_key")) {
 						names = line.split("=");
-						System.out.println("api_key: " + names[1]);
-						properties.put(apiKeyProperty, pathCleanup(names[1]));
+						if(names.length > 1)
+							properties.put(apiKeyProperty, pathCleanup(names[1]));
 					}
 	            }
 	        }

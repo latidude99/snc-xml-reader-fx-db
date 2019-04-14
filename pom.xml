@@ -111,10 +111,10 @@
                                 <icon>src/main/resources/icons/snc_wheel.ico</icon>
                                 <jre>
                                     <minVersion>1.8.0</minVersion>
-                                    <maxVersion></maxVersion>
+                                    <maxVersion>1.11</maxVersion>
                                     <jdkPreference>preferJre</jdkPreference>
                                     <runtimeBits>64/32</runtimeBits>
-                                    <initialHeapSize>128</initialHeapSize>
+                                    <initialHeapSize>256</initialHeapSize>
                                     <maxHeapSize>2048</maxHeapSize>
                                 </jre>
                                 <versionInfo>

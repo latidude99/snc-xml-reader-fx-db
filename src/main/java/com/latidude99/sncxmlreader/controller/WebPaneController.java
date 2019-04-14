@@ -407,8 +407,6 @@ public class WebPaneController implements Initializable{
 				Thread thread = new Thread(dbLoaderTask);
 		        thread.setDaemon(true);
 		        thread.start();
-				
-//				
 			}
 		});
 	    

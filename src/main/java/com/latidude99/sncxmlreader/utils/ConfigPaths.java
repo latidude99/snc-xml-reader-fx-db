@@ -9,13 +9,20 @@ public enum ConfigPaths {
     FILE_PARAM("?file="),
     PREFERENCES("/sncxmlreader"),
     USER_DB("user.data/db/"),
+    USER_XML("user.data/xml/"),
+    USER_XML_FOLDER("user.data/xml"),
+    USER_DB_FOLDER("user.data/db"),
     USER("user.data/"),
     CONFIG("user.data/config.properties"),
     DATABASE("user.data/db/snc_catalogue.db"),
     XML("user.data/xml/snc_catalogue.xml"),
     HTML("user.data/html/"),
     API_KEY("no default key"),
-    APP_VERSION("version 2.3");
+    APP_VERSION("version 2.3"),
+    XML_FILE_PROPERTY("xml_file_path"),
+    DB_FILE_PROPERTY("db_file_path"),
+    API_KEY_PROPERTY("api_key");
+
 
     private String path;
 
