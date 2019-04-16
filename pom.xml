@@ -15,6 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <version.maven.compiler>3.8.0</version.maven.compiler>
+        <junit-platform.version>5.4.1</junit-platform.version>
         <version.maven.site>3.6</version.maven.site>
         <version.sonar>4.3</version.sonar>
         <version.launch4j>1.7.25</version.launch4j>
@@ -153,14 +154,42 @@
                     </executions>
                 </plugin>
 
+                <!-- for JUnit5 (mandatory) -->
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.0</version>
+                </plugin>
 
             </plugins>
     </build>
 
   
   <dependencies>
-  
-	  	<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+
+      <!-- for JUnit5 (mandatory) -->
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
+          <version>${junit-platform.version}</version>
+          <scope>test</scope>
+      </dependency>
+      <!-- for JUnit5 (mandatory) -->
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <version>${junit-platform.version}</version>
+          <scope>test</scope>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params -->
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-params</artifactId>
+          <version>5.4.1</version>
+          <scope>test</scope>
+      </dependency>
+
+
+      <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 		    <groupId>commons-io</groupId>
 		    <artifactId>commons-io</artifactId>
@@ -204,10 +233,46 @@
 		    <artifactId>jcoord</artifactId>
 		    <version>1.0</version>
 		</dependency>
-	  
-  </dependencies>
-  
-  
 
-  
+
+  </dependencies>
+
+
+
+
 </project>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

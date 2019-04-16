@@ -20,55 +20,81 @@ public class FormatUtils {
         for(String n: inputList) {
         	if(n.contains("-") && n.matches("[0-9]+")) {
         		String[] range = n.split("-");
-        		int rangeMin = Integer.parseInt(range[0]);
-        		int rangeMax = Integer.parseInt(range[1]);
-        		if( rangeMin < rangeMax) {
-        			for(int i = rangeMin; i <rangeMax + 1; i++) {
-        				outputSet.add(i + "");
-        			}
-        		}else {
-        			for(int i = rangeMax; i < rangeMin + 1; i++) {
-            			outputSet.add(i + "");
-        			}
-        		}
+        		if(range.length == 2){
+					if(!range[0].equals("") && !range[1].equals("")) {
+						int rangeMin = Integer.parseInt(range[0]);
+						int rangeMax = Integer.parseInt(range[1]);
+						if( rangeMin < rangeMax) {
+							for(int i = rangeMin; i <rangeMax + 1; i++) {
+								outputSet.add(i + "");
+							}
+						}else {
+							for (int i = rangeMax; i < rangeMin + 1; i++) {
+								outputSet.add(i + "");
+							}
+						}
+					}else if(range[0].equals("")){
+						outputSet.add(range[1]);
+					}else if(range[1].equals("")) {
+						outputSet.add(range[0]);
+					}
+
+				}else if(range.length == 1){
+					outputSet.add(range[0]);
+				}
+
+
 			}else if(n.contains("-")){
 				String lettersLeft = "";
 				String lettersRight = "";
 				String[] range = n.split("-");
-				for (int i=0; i<range[0].length(); i++){
-					if(!range[0].substring(i, i+1).matches("[0-9]+"))
-						lettersLeft = lettersLeft + range[0].charAt(i);
+				if(range.length == 2){
+					if(!range[0].equals("") && !range[1].equals("")){
+						for (int i=0; i<range[0].length(); i++){
+							if(!range[0].substring(i, i+1).matches("[0-9]+"))
+								lettersLeft = lettersLeft + range[0].charAt(i);
+						}
+						for (int i=0; i<range[1].length(); i++){
+							if(!range[1].substring(i, i+1).matches("[0-9]+"))
+								lettersRight = lettersRight + range[0].charAt(i);
+						}
+						if(lettersLeft.equals(lettersRight)){
+							int rangeMin = Integer.parseInt(range[0].substring(lettersLeft.length()));
+							int rangeMax = Integer.parseInt(range[1].substring(lettersRight.length()));
+							if( rangeMin < rangeMax) {
+								for(int i = rangeMin; i <rangeMax + 1; i++) {
+									outputSet.add(lettersLeft.toUpperCase() + i);
+								}
+							}else {
+								for(int i = rangeMax; i < rangeMin + 1; i++) {
+									outputSet.add(lettersLeft.toUpperCase() + i);
+								}
+							}
+						}else if(!lettersLeft.equals(lettersRight) && lettersRight.equals("")){
+							int rangeMin = Integer.parseInt(range[0].substring(lettersLeft.length()));
+							int rangeMax = Integer.parseInt(range[1].substring(lettersRight.length()));
+							if( rangeMin < rangeMax) {
+								for(int i = rangeMin; i <rangeMax + 1; i++) {
+									outputSet.add(lettersLeft.toUpperCase() + i);
+								}
+							}else {
+								for(int i = rangeMax; i < rangeMin + 1; i++) {
+									outputSet.add(lettersLeft.toUpperCase() + i);
+								}
+							}
+						}
+					}else if(range[0].equals("")){
+						outputSet.add(range[1]);
+					}else if(range[1].equals("")) {
+						outputSet.add(range[0]);
+					}
+
+				}else if(range.length == 1){
+					outputSet.add(range[0]);
 				}
-				for (int i=0; i<range[1].length(); i++){
-					if(!range[1].substring(i, i+1).matches("[0-9]+"))
-						lettersRight = lettersRight + range[0].charAt(i);
-				}
-				if(lettersLeft.equals(lettersRight)){
-					int rangeMin = Integer.parseInt(range[0].substring(lettersLeft.length()));
-					int rangeMax = Integer.parseInt(range[1].substring(lettersRight.length()));
-					if( rangeMin < rangeMax) {
-						for(int i = rangeMin; i <rangeMax + 1; i++) {
-							outputSet.add(lettersLeft.toUpperCase() + i);
-						}
-					}else {
-						for(int i = rangeMax; i < rangeMin + 1; i++) {
-							outputSet.add(lettersLeft.toUpperCase() + i);
-						}
-        			}
-				}else if(!lettersLeft.equals(lettersRight) && lettersRight.equals("")){
-					int rangeMin = Integer.parseInt(range[0].substring(lettersLeft.length()));
-					int rangeMax = Integer.parseInt(range[1].substring(lettersRight.length()));
-					if( rangeMin < rangeMax) {
-						for(int i = rangeMin; i <rangeMax + 1; i++) {
-							outputSet.add(lettersLeft.toUpperCase() + i);
-						}
-					}else {
-						for(int i = rangeMax; i < rangeMin + 1; i++) {
-							outputSet.add(lettersLeft.toUpperCase() + i);
-						}
-        			}
-				}
-        	}else {
+
+
+        	}else if(!n.equals("") && !n.equals(" ")){
         		outputSet.add(n);
         	}
 		}
@@ -118,7 +144,7 @@ public class FormatUtils {
 			String[] lines = content.split("\n");
 			contentList = new ArrayList<String>(Arrays.asList(lines));
 		} else {
-			MessageBox.show("The text area is empty!", "Input error");
+			MessageBox.show("Text area is empty!", "Input error");
 		}
 		return contentList;
 	}
