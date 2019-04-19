@@ -326,6 +326,7 @@ public class MainPaneController implements Initializable {
         buttonSearchChart.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                System.out.println("textSearchChart.getText(): " + textSearchChart.getText());
                 searchCharts();
             }
         });
@@ -347,7 +348,6 @@ public class MainPaneController implements Initializable {
 
 
     private void setInfoAfterDBLoaded() {
-//		String dbPath = FileUtils.readDBPath(ConfigPaths.CONFIG.getPath(), ConfigPaths.DATABASE.getPath());
         database = Database.databaseInstance;
         metaRepository = database.getRepository(BaseFileMetadata.class);
         appDTORepository = database.getRepository(AppDTO.class);
@@ -386,23 +386,21 @@ public class MainPaneController implements Initializable {
 
 
     private void saveSearch(File file) {
+        String filePath = "";
         if (textResult.getText() == null) {
             MessageBox.show("Nothing to save!", "Warning");
             return;
         }
-        try (OutputStream os = new FileOutputStream(file);
-             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));) {
-            for (String str : FormatUtils.stringToList(textResult.getText())) {
-                bw.write(str);
-                bw.newLine();
-            }
-            pathSaveResult.setText(file.getAbsolutePath());
-            MessageBox.show("File saved!", "Confirmation");
-        } catch (Exception ex) {
+        try{
+            filePath = SearchResultUtils.saveToFile(file, textResult.getText());
+            pathSaveResult.setText(filePath);
+            MessageBox.show("File saved: " + filePath, "Confirmation");
+        } catch (Exception e) {
             MessageBox.show("File not saved", "Error");
-            ex.printStackTrace();
+            e.printStackTrace();
         }
     }
+
 
 
     private void loadPaneSplash() {
@@ -440,9 +438,7 @@ public class MainPaneController implements Initializable {
 
         try {
             file = new File(filePath);
-            System.out.println("398: " + filePath);
             long fileSize = file.length();
-            System.out.println(fileSize);
             if (fileSize < 1) {
                 textResult.setText("Catalogue and Database files not found. \n\n"
                         + "Please choose catalogue file manually \n"
@@ -451,12 +447,7 @@ public class MainPaneController implements Initializable {
                         "(see APP_FOLDER/user_data/config.txt for information about how to do it correctly)");
                 return ukhoCatalogueFile;
             }
-            FileInputStream fis = new FileInputStream(file);
-            JAXBContext jaxbContext;
-            jaxbContext = JAXBContext.newInstance(UKHOCatalogueFile.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            ukhoCatalogueFile = (UKHOCatalogueFile) unmarshaller.unmarshal(fis);
-            FileUtils.writeConfig(filePath, ConfigPaths.DATABASE.getPath(), ConfigPaths.API_KEY.getPath());
+            ukhoCatalogueFile = XMLFileParser.parse(filePath);
         } catch (FileNotFoundException io) {
             textResult.setText("Catalogue and Database files not found. \n\n"
                     + "Please choose catalogue file manually \n"
@@ -464,10 +455,6 @@ public class MainPaneController implements Initializable {
                     + "You may also want to check the config.txt file - it might be incorrectly formed. \r\n" +
                     "(see APP_FOLDER/user_data/config.txt for information about how to do it correctly)");
             io.printStackTrace();
-        } catch (JAXBException e) {
-            MessageBox.show("Parsing from XML format failed (file corrupted or not in correct format)",
-                              "Error");
-            e.printStackTrace();
         }
 
         return ukhoCatalogueFile;
@@ -569,8 +556,7 @@ public class MainPaneController implements Initializable {
             thread.setDaemon(true);
             thread.start();
         } else {
-//			MessageBox.show("No catalogue and database files found, please check config.txt for details.\n"
-//					+ "Follow instructions in config.txt file or download a new catalogue file from UKHO website.", "Info");
+
         }
         return database;
     }

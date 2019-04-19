@@ -117,15 +117,6 @@ public class WebPaneController implements Initializable{
 	@FXML
 	Rectangle rectangleCover;
 
-	/*
-	 * MainPaneController mainPaneController; public MainPaneController
-	 * getMainPaneController() { return mainPaneController; } public void
-	 * setMainPaneController(MainPaneController mainPaneController) {
-	 * this.mainPaneController = mainPaneController; }
-	 */
-
-
-
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 
@@ -230,11 +221,8 @@ public class WebPaneController implements Initializable{
 		     public void changed(ObservableValue<? extends State> ov, State oldState, State newState) {
 		    	 String newURL = webEngine.getLocation();
 		         if (newState == Worker.State.SUCCEEDED) {
-		        	 System.out.println("after login new URL: " + newURL);
 		        	 afterLogin();
 		         }
-//		         boolean loggedIn = downloader.loginCheck(UKHO_DOWNLOAD);
-
 		     }
 		});
 
@@ -249,12 +237,6 @@ public class WebPaneController implements Initializable{
 	             }else {
 	             	MessageBox.show("Please enter your Username  and Password.", "Info");
 	             }
-
-/*
-			        int delay = 5;
-			        scheduler.schedule(afterLoginTask, delay, TimeUnit.SECONDS);
-			        //scheduler.shutdown();
-*/
 	         }
 
 	    });
@@ -322,10 +304,6 @@ public class WebPaneController implements Initializable{
 						    	   labelDownloaded.textProperty().unbind();
 						    	   progressIndicator.setVisible(false);
 						    	   labelDownloaded.setVisible(false);
-
-
-//						    	   buttonDelete.setText("Delete file: " + FILE_PATH);
-//						    	   buttonDelete.setVisible(true);
 						    	   MessageBox.show("Could not save the file. Delete the old file and try again. ", "Error");
 						       }
 						   });
@@ -369,15 +347,8 @@ public class WebPaneController implements Initializable{
 		    	labelDownloaded.textProperty().bind(dbLoaderTask.messageProperty());
 		    	buttonUpdate.setVisible(false);
 		    	buttonStop.setVisible(true);
-/*
-		    	dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_RUNNING,
-						new EventHandler<WorkerStateEvent>() {
-					@Override
-					public void handle(WorkerStateEvent t) {
 
-						}
-					});
-*/		    	dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
+		    	dbLoaderTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
 						new EventHandler<WorkerStateEvent>() {
 					@Override
 					public void handle(WorkerStateEvent t) {

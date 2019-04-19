@@ -1,24 +1,37 @@
 import com.latidude99.sncxmlreader.utils.FormatUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@DisplayName("FormatUtils - testing user search field input (String)")
 public class FormatUtilsTests {
     Set<String> expected;
 
     @BeforeEach
     public void init(){
-        expected = new HashSet<>();
+        expected = new TreeSet<>();
     }
 
     @AfterEach
     public void tearDown(){
         expected = null;
+    }
+
+
+    @Test
+    @DisplayName("Input String 0 : no input")
+    public void parseInputTest_0(){
+        final String input = "";
+        final Set<String> actual = FormatUtils.parseInput(input);
+        assertEquals(expected, actual, "input: empty string");
     }
 
     @Test
@@ -27,11 +40,11 @@ public class FormatUtilsTests {
         final String input = "3452";
         expected.add("3452");
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "single number");
+        assertEquals(expected, actual, "single number");
     }
 
     @Test
-    @DisplayName("Input String 02 : multiple numbers, comma sepatated with white space")
+    @DisplayName("Input String 02 : multiple numbers, comma separ`ated with white space")
     public void parseInputTest_2(){
         final String input = "3452 , 564, 5678,2187 ";
         expected.add("3452");
@@ -39,7 +52,7 @@ public class FormatUtilsTests {
         expected.add("5678");
         expected.add("2187");
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "comma separated with white space");
+        assertEquals(expected, actual, "comma separated with white space");
     }
 
     @Test
@@ -49,7 +62,7 @@ public class FormatUtilsTests {
         for(int i = 564; i < 3453; i++)
             expected.add("" + i);
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "dash separated with white space, " +
+        assertEquals(expected, actual, "dash separated with white space, " +
                 "no other characters");
     }
 
@@ -64,7 +77,7 @@ public class FormatUtilsTests {
         for(int i = 564; i < 3453; i++)
             expected.add("" + i);
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "Multiple numbers, comma and dash separated with white space");
+        assertEquals(expected, actual, "Multiple numbers, comma and dash separated with white space");
     }
 
     @Test

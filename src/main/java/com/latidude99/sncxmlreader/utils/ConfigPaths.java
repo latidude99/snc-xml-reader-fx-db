@@ -17,6 +17,7 @@ public enum ConfigPaths {
     DATABASE("user.data/db/snc_catalogue.db"),
     XML("user.data/xml/snc_catalogue.xml"),
     HTML("user.data/html/"),
+    TXT("user.data/txt/"),
     API_KEY("no default key"),
     APP_VERSION("version 2.3"),
     XML_FILE_PROPERTY("xml_file_path"),

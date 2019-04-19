@@ -20,13 +20,14 @@
 
 package com.latidude99.sncxmlreader.controller;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.fxml.Initializable;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 
 
 public class SplashPaneController implements Initializable{
@@ -60,7 +61,6 @@ public class SplashPaneController implements Initializable{
 		
 		progressSplash.setStyle("-fx-progress-color: fuchsia;");
 		System.out.println(labelSplash.getText());
-//		labelSplash.setText("test init");
 	}
 	
 	
