@@ -13,13 +13,19 @@ import java.util.List;
 import java.util.Map;
 
 public class FileCleanupTask extends Task<Void> {
-    String dbName;
+    private String dbName;
 
     public FileCleanupTask(String dbPath){
-        if(dbPath != null && dbPath.contains("/"))
-            dbName = dbPath.substring(dbPath.lastIndexOf('/' + 1));
+        if(dbPath != null && dbPath.contains("/")){
+            int startIndex = dbPath.lastIndexOf('/') + 1;
+            dbName = dbPath.substring(startIndex);
+        }
         else
             dbName = dbPath;
+    }
+
+    public String getDbName(){
+        return dbName;
     }
 
     @Override
@@ -42,7 +48,7 @@ public class FileCleanupTask extends Task<Void> {
     protected void succeeded() {
 
     }
-    private void deleteFiles(String path, String dbPath){
+    public void deleteFiles(String path, String dbName){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
         Map<LocalDateTime, File> filesToClean = new HashMap<>();
         File fileToDelete;
@@ -50,7 +56,7 @@ public class FileCleanupTask extends Task<Void> {
         LocalDateTime latestDateTime = LocalDateTime.of(1500, Month.JANUARY, 01, 0, 0, 0);
         List<String> names = new ArrayList<>();
         File[] files = new File(path).listFiles();
-
+        System.out.println("files.length: " + files);
         for (File file : files) {
             if (file.isFile()) {
                 names.add(file.getName());
@@ -69,7 +75,7 @@ public class FileCleanupTask extends Task<Void> {
                     filesToClean.put(fileDateTime, file);
                     if(fileDateTime.isAfter(latestDateTime))
                         latestDateTime = fileDateTime;
-                    System.out.println("latestDateTime: " + latestDateTime);
+ //                   System.out.println("latestDateTime: " + latestDateTime);
                 } catch (DateTimeParseException e){
                    // System.out.println(e.getMessage());
                 }

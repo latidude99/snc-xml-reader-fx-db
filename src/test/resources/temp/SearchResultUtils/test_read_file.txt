@@ -1,0 +1,33 @@
+Searched for 1 chart
+7  
+
+Found 1 chart
+7  
+-------------------------------------------------
+
+Chart Number: 7
+Chart International Number: 7164
+Chart Scale: 1:25,000
+Chart Title: Aden Harbour and Approaches
+Chart Status: Edition, Date: 2013-10-31
+
+Additional panels: none
+
+-------------------------------------------------
+
+Geographic Limits: 
+               Polygon: 
+                          Position:      latitude = 12.69 longitude = 44.84167
+                          Position:      latitude = 12.83503 longitude = 44.84165
+                          Position:      latitude = 12.83502 longitude = 44.95505
+                          Position:      latitude = 12.83503 longitude = 45.0683
+                          Position:      latitude = 12.69 longitude = 45.06833
+                          Position:      latitude = 12.69002 longitude = 44.95665
+                          Position:      latitude = 12.69 longitude = 44.84167
+
+Notices To Mariners: 
+           Year: 2016, Week: 3, Number: 452, Type: ChartUpdate
+           Year: 2017, Week: 35, Number: 4150, Type: ChartUpdate
+           Year: 2018, Week: 12, Number: 1445, Type: ChartUpdate
+           Year: 2018, Week: 18, Number: 2053, Type: ChartUpdate
+=================================================
