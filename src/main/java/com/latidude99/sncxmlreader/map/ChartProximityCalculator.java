@@ -18,8 +18,7 @@ public class ChartProximityCalculator {
 	private static final double FACTOR = 0.9;
 	
 	ChartCentreCalculator chartCentreCalculator = new ChartCentreCalculator();
-	public Map<String, StandardNavigationChart> chartsOverlaping;
-	
+
 	public ChartProximityCalculator() {}
 	
 	/*******************************************************************************************************/
@@ -28,7 +27,7 @@ public class ChartProximityCalculator {
 																			Map<String, StandardNavigationChart> chartsToCheck,
 																			String searchType){
 		Map<String, StandardNavigationChart> chartsProximalTotal = new LinkedHashMap<>();
-		Map<String, StandardNavigationChart> chartsProximalSingle = new LinkedHashMap<>();
+		Map<String, StandardNavigationChart> chartsProximalSingle;
 		chartsProximalTotal.putAll(chartsInputFound);
 		switch(searchType) {
 			case RANGE:

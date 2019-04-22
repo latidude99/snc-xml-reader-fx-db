@@ -1,18 +1,16 @@
 package com.latidude99.sncxmlreader.utils;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
+import com.latidude99.sncxmlreader.db.ChartMap;
+import com.latidude99.sncxmlreader.db.Database;
+import com.latidude99.sncxmlreader.map.ChartProximityCalculator;
+import com.latidude99.sncxmlreader.model.StandardNavigationChart;
+import javafx.concurrent.Task;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 
-import com.latidude99.sncxmlreader.db.ChartMap;
-import com.latidude99.sncxmlreader.db.Database;
-import com.latidude99.sncxmlreader.model.StandardNavigationChart;
-import com.latidude99.sncxmlreader.map.ChartProximityCalculator;
-
-import javafx.concurrent.Task;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class ChartSearchTask extends Task<String> {
 	private static final String SINGLE = "=";
@@ -27,6 +25,10 @@ public class ChartSearchTask extends Task<String> {
 	private String searchType;
 	long count;	
 	long searchedNum;
+
+	public ChartSearchTask(Nitrite database){
+		this.database = database;
+	}
 	
 	
 	public ChartSearchTask(String input, boolean fullInfo) {
@@ -80,7 +82,7 @@ public class ChartSearchTask extends Task<String> {
 	
 	
 	
-	private Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched, String searchType){
+	public Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched, String searchType){
 //		System.out.println(database.toString());
 //		chartRepository = database.getRepository(StandardNavigationChart.class);
 		ChartProximityCalculator chartProximityCalculator = new ChartProximityCalculator();
@@ -106,6 +108,7 @@ public class ChartSearchTask extends Task<String> {
         				chartsFound.put(chartNum, chartMap.get(chartNum));
         	}	
         }
+
 		ChartMap.found = chartsFound;
 		if(chartsFound.size() > 1) {
 			ChartMap.display = chartsFound;
