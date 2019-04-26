@@ -29,6 +29,10 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+ * Tests correctness of parsing an XML catalogue file.
+ */
+
 public class XMLFileParserTests {
     UKHOCatalogueFile ukhoCatalogueFile;
     StandardNavigationChart chart;

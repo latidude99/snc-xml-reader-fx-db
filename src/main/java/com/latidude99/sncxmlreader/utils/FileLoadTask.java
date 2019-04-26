@@ -22,13 +22,18 @@ package com.latidude99.sncxmlreader.utils;
 
 import com.latidude99.sncxmlreader.model.UKHOCatalogueFile;
 import javafx.concurrent.Task;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 
+/*
+ * Parses UKHOCatalogueFile objects from an xml file on a separate thread.
+ */
+
 public class FileLoadTask extends Task<UKHOCatalogueFile> {
-	File file;
+    private static final org.apache.log4j.Logger log = Logger.getLogger(FileLoadTask.class);
+    File file;
 	UKHOCatalogueFile ukhoCatalogueFile;
-	
 	String fileName;
 	
 	public FileLoadTask(String fileName) {
@@ -44,13 +49,12 @@ public class FileLoadTask extends Task<UKHOCatalogueFile> {
 
     @Override
     protected void failed() {
-//    	System.out.println("Could not load the catalogue file");
-//        MessageBox.show("Loading XML file unsuccessful", "Error");
+    log.error("Could not load the catalogue file");
     }
 
     @Override
     protected void succeeded() {
-       System.out.println("Catalogue file loaded from: " + file.getAbsolutePath() + ", charts: " + 
+       log.info("Catalogue file loaded from: " + file.getAbsolutePath() + ", charts: " +
     		   				ukhoCatalogueFile.getProducts().getPaper().getCharts().size());
     }
     

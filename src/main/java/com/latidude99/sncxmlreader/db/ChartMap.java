@@ -25,6 +25,14 @@ import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/*
+ * This class static fields serve as temporary (when the application
+ * is running) global variables holding data. This is much faster than
+ * reading data form database. Could not find the way to sufficiently
+ * speed up database operations, even with parallel streams processing,
+ * especially searching. The application memory footprint has not increased
+ * significantly but searching speed increased two or sometimes three-fold.
+ */
 public class ChartMap {
 	
 	public static Map<String, StandardNavigationChart> display = new LinkedHashMap<>();

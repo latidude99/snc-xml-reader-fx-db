@@ -31,31 +31,34 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/*
+ * Shows progress indicator wheel.
+ */
+
 public class SplashScreen extends Application {
 	 
     @Override
     public void start(Stage stage) throws Exception {
         try {
             Label lbl = new Label("LABEL");
-            VBox p = new VBox(lbl);
+            VBox vBox = new VBox(lbl);
  
-            //make the background of the label white and opaque
+            // Makes the background of the label white and opaque
             lbl.setStyle("-fx-background-color: rgba(255, 255, 255, 1);");
  
-            //add some borders to visualise the element' locations
+            // Adds some borders to visualise the element's locations
             lbl.setBorder(new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID, null, null)));
-            p.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, null, null)));
+            vBox.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, null, null)));
  
-            Scene scene = new Scene(p);
+            Scene scene = new Scene(vBox);
             stage.setScene(scene);
- 
-            //this is where the transparency is achieved:
-            //the three layers must be made transparent
-            //(i)  make the VBox transparent (the 4th parameter is the alpha)
-            p.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
-            //(ii) set the scene fill to transparent
+
+            // The three layers must be made transparent:
+            // Makes the VBox transparent (the 4th parameter is the alpha)
+            vBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
+            // Sets the scene fill to transparent
             scene.setFill(null);
-            //(iii) set the stage background to transparent
+            // Sets the stage background to transparent
             stage.initStyle(StageStyle.TRANSPARENT);
  
             stage.setWidth(200);
@@ -65,7 +68,7 @@ public class SplashScreen extends Application {
             e.printStackTrace();
         }
     }
- 
+
     public static void main(String[] args) {
         launch(args);
     }

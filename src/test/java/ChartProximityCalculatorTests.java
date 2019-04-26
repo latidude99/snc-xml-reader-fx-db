@@ -29,6 +29,9 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+ * Tests algorithms for different search types.
+ */
 public class ChartProximityCalculatorTests {
     static UKHOCatalogueFile ukhoCatalogueFile;
     static String filePath = "src/test/resources/snc_catalogue.xml";
@@ -88,9 +91,9 @@ public class ChartProximityCalculatorTests {
         expectedSet.add("5");
         actualSet = chartProximityCalculator.totalChartsProximal(inputMap, allChartsLoadedMap, searchType).keySet();
 
-        assertNotNull(actualSet, "charts found numbers set is null");
+        assertNotNull(actualSet, "charts found numbers Set object is null but in shouldn't");
         assertEquals(expectedSet.size(),  actualSet.size(), "incorrect number of charts found");
-        assertEquals(expectedSet, actualSet, "incorrect chart numbers found");
+        assertEquals(expectedSet, actualSet, "incorrect chart's number found");
     }
 
     @Test
@@ -105,7 +108,7 @@ public class ChartProximityCalculatorTests {
         expectedSet.addAll(Arrays.asList(numbers));
         actualSet = chartProximityCalculator.totalChartsProximal(inputMap, allChartsLoadedMap, searchType).keySet();
 
-        assertNotNull(actualSet, "charts found numbers set is null");
+        assertNotNull(actualSet, "charts found numbers Set object is null but in shouldn't");
         assertEquals(expectedSet.size(),  actualSet.size(), "incorrect number of charts found");
         assertEquals(expectedSet, actualSet, "incorrect chart numbers found");
     }
@@ -122,7 +125,7 @@ public class ChartProximityCalculatorTests {
         expectedSet.addAll(Arrays.asList(numbers));
         actualSet = chartProximityCalculator.totalChartsProximal(inputMap, allChartsLoadedMap, searchType).keySet();
 
-        assertNotNull(actualSet, "charts found numbers set is null");
+        assertNotNull(actualSet, "charts found numbers Set object is null but in shouldn't");
         assertEquals(expectedSet.size(),  actualSet.size(), "incorrect number of charts found");
         assertEquals(expectedSet, actualSet, "incorrect chart numbers found");
     }
@@ -143,7 +146,7 @@ public class ChartProximityCalculatorTests {
         expectedSet.addAll(Arrays.asList(numbers));
         actualSet = chartProximityCalculator.totalChartsProximal(inputMap, allChartsLoadedMap, searchType).keySet();
 
-        assertNotNull(actualSet, "charts found numbers set is null");
+        assertNotNull(actualSet, "charts found numbers Set object is null but in shouldn't");
         assertEquals(expectedSet.size(),  actualSet.size(), "incorrect number of charts found");
         assertEquals(expectedSet, actualSet, "incorrect chart numbers found");
     }

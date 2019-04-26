@@ -26,6 +26,28 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/*
+ * Converts user input String from the search field into a Set<String>
+ * Rules:
+ *  - one Set entry = one chart number to be searched
+ *  - individual chart numbers and ranges of numbers are separated by comma
+ *  - all the whitespaces are removed
+ *  - chart numbers may contain A-Z/a-z characters and, as they may be valid,
+ * 		are not removed
+ *  - a range of charts may be entered as min-max or max-min, both valid
+ *  - a range of charts may include A-Z/a-z chars only in the first part
+ *      (eg. nz343 - 356) or both (eg. aus146 - aus172). For the moment,
+ *      a case of only the second part of the range having A-Z/a-z chars,
+ *      is not supported.
+ *
+ *  The special characters for defining search type ('=', '+', '-') are
+ *  removed from the input String before this class is used so any characters
+ *  that accompany numbers are treated as part of charts number
+ *  (eg. AUS345, DE54 but also $43 or =764).
+ *  Searched chart numbers are displayed as a part of the search result
+ *  making it easy to check if there were any typos in the search entered by a user
+ */
+
 public class FormatUtils {
 	
 	public static Set<String> parseInput(String input) {
@@ -120,25 +142,10 @@ public class FormatUtils {
 		}
 		return outputSet;
     }
-	
 
-	public static String printList20Cols(List<String> list) {
-		StringBuilder sb = new StringBuilder();
-		int count = 0;
-		for(String s : list) {
-			sb.append(s + "  ");
-			count++;
-			if(count == 5 || count == 10 || count ==15) {
-				sb.append("   ");
-			}
-			if(count == 20) {
-				sb.append("\n");
-				count = 0;
-			}
-		}
-		return sb.toString();
-	}
-	
+	/*
+	 * Formats displaying chart numbers.
+	 */
 	public static String printSet20Cols(Set<String> set) {
 		StringBuilder sb = new StringBuilder();
 		int count = 0;
@@ -155,16 +162,19 @@ public class FormatUtils {
 		}
 		return sb.toString();
 	}
-	
+
+	/*
+	 * Used when saving search result (the TextArea content) to a file.
+	 */
 	public static List<String>  stringToList(String content){
 		List<String> contentList = new ArrayList<>();
 		String newline = System.getProperty("line.separator");
 		boolean hasNewLine = content.contains(newline);
 		if((content.trim().length() > 0) && (!hasNewLine)){
 			String[] lines = content.split("\n");
-			contentList = new ArrayList<String>(Arrays.asList(lines));
+			contentList = new ArrayList<>(Arrays.asList(lines));
 		} else {
-			MessageBox.show("Text area is empty!", "Input error");
+			MessageBox.show("Nothing to save yet.", "Input error");
 		}
 		return contentList;
 	}

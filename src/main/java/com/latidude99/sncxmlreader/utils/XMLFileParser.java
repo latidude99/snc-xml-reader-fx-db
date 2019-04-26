@@ -29,6 +29,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+/*
+ * Parses an XML chart catalogue to an UKHOCatalogueFile object.
+ */
 
 public class XMLFileParser {
 	private static UKHOCatalogueFile ukhoCatalogueFile;

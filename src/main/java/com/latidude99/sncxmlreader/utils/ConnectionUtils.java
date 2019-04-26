@@ -25,11 +25,15 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
+/*
+ * Workaround for the websites requiring an SSL certificate.
+ * from:
+ * https://nakov.com/blog/2009/07/16/disable-certificate-validation-in-java-ssl-connections/
+ */
 public class ConnectionUtils {
 	
 	public void sslOff() {
-		
-// from https://nakov.com/blog/2009/07/16/disable-certificate-validation-in-java-ssl-connections/
+
 			// Create a trust manager that does not validate certificate chains
 	        TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
 	                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -41,6 +45,7 @@ public class ConnectionUtils {
 	                }
 	            }
 	        };
+
 	        // Install the all-trusting trust manager
 	        SSLContext sc;
 			try {

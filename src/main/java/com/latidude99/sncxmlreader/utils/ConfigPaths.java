@@ -20,6 +20,9 @@
 
 package com.latidude99.sncxmlreader.utils;
 
+/*
+ * Folders, files and URLs location paths, used throughout the app.
+ */
 public enum ConfigPaths {
 
 

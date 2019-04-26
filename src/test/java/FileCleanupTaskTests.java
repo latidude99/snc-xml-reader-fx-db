@@ -30,6 +30,10 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/*
+ * Tests deleting old database files using a folder created in test resources.
+ */
+
 public class FileCleanupTaskTests {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
@@ -138,10 +142,10 @@ public class FileCleanupTaskTests {
                 "incorrect number of files after clean up");
 
         assertTrue(filesNamesAfterDeleting.contains(expected_dbName),
-                "snc_catalogue_initial_in_config.db - deleted");
+                "snc_catalogue_initial_in_config.db was deleted but shouldn't");
 
         assertTrue(filesNamesAfterDeleting.contains(expected_lastName),
-                "snc_catalogue_date_2019-04-09_loaded_on_2019-04-20 10.30.45.db - deleted");
+                "snc_catalogue_date_2019-04-09_loaded_on_2019-04-20 10.30.45.db was deleted but shouldn't");
     }
 }
 

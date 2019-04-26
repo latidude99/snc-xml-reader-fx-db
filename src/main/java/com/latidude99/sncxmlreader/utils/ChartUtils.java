@@ -25,6 +25,10 @@ import com.latidude99.sncxmlreader.model.*;
 import java.util.Map;
 import java.util.Set;
 
+/*
+ * Collection of methods used to create and format a String displaying charts info.
+ */
+
 public class ChartUtils {
 	
 	public String printSearchSummary(Map<String, StandardNavigationChart> chartsFound, Set<String> numbersSearched) {

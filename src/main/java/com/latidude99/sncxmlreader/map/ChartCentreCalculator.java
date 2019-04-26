@@ -30,43 +30,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import uk.me.jstott.jcoord.LatLng;
-
+/*
+ * Calculates centre coordinates (latitude, longitude) of a chart including
+ * all its polygons (panels). Also coordinates of the bottom-left corner
+ * (used for placing a label with the chart's number)
+ */
 public class ChartCentreCalculator {
 	public Map<String, Coordinates> chartsCentreCoords;
 	
 	public ChartCentreCalculator() {}
-	
+
 	public ChartCentreCalculator(Map<String, StandardNavigationChart> charts) {
 		chartsCentreCoords = createChartsCentreCoordsMap(charts);
-//		calcDistance(charts);
 	}
+
 	public ChartCentreCalculator(List<StandardNavigationChart> charts) {
 		chartsCentreCoords = createChartsCentreCoordsMap(charts);
 	}
-/*	
-	private void calcDistance(Map<String, StandardNavigationChart> charts) {
-		LatLng latlng1 = new LatLng(createChartsCentreCoordsMap(charts).get("5").latitude,
-												createChartsCentreCoordsMap(charts).get("5").longitude);
-		LatLng latlng2 = new LatLng(createChartsCentreCoordsMap(charts).get("6").latitude,
-				createChartsCentreCoordsMap(charts).get("6").longitude);
-		double distance = latlng1.distance(latlng2);
-		System.out.println("Distance 5 - 6: " + distance);
-	}
-*/	
+
 	public Coordinates calculatePolygonCentre(Polygon polygon) {
-		List<Coordinates> coords = new ArrayList<>();
+		List<Coordinates> coords;
 		Coordinates polyCentre = null;
 		coords = polygon2CoordsList(polygon);
 		polyCentre = calculateCentreFromCoords(coords);
-		
 		return polyCentre;
 	}
-	
+
+	/*
+	 * Used for placing a label (chart's number)
+	 */
 	public Coordinates calculatePolygonBottomLeftInside(Polygon polygon) {
 		List<Coordinates> coords = new ArrayList<>();
 		coords = polygon2CoordsList(polygon);
-		
 		List<Double> latitudes = new ArrayList<>();
 		List<Double> longitudes = new ArrayList<>();
 		for(Coordinates coord : coords) {
@@ -77,12 +72,15 @@ public class ChartCentreCalculator {
 		double latMin = findMin(latitudes);
 		double lngMax = findMax(longitudes);
 		double lngMin = findMin(longitudes);
-		
-		double bottomLeftLat = latMin;// + (latMax - latMin) * 0.02;
+
+		// Google Maps Label Markers have the insetion point below the text
+		// so no vertical (latitude) adjustment is needed
+		double bottomLeftLat = latMin;
+
+		//This formula is a compromise: it will still overlap the chart's
+		// boundry when zoomed out more than a few levels from the initial zoom level
 		double bottomLeftLng = lngMin + (lngMax - lngMin) * 0.05;
-		
-//		System.out.println("latMin: " +latMin + ", " +"latMax: " + latMax);
-			
+
 		return new Coordinates(bottomLeftLat, bottomLeftLng);
 	}
 	
@@ -105,12 +103,16 @@ public class ChartCentreCalculator {
 		}
 		return chartsCentreCoordsMap;
 	}
-	
+
+	/*
+	 * Charts may have many polygons (panels). This method calculates
+	 * the centre of all of them (which may not be inside any of the polygons).
+	 */
 	public Coordinates calculateChartCentre(StandardNavigationChart chart) {
 		List<Coordinates> polyCentreList = new ArrayList<>();
-		List<Coordinates> coords = new ArrayList<>();
-		Coordinates polyCentre = null;
-		Coordinates chartCentre = null;
+		List<Coordinates> coords;
+		Coordinates polyCentre;
+		Coordinates chartCentre;
 		List<Polygon> polygonList = extractChartPolygons(chart);
 		for(Polygon poly : polygonList) {
 			coords = polygon2CoordsList(poly);
@@ -135,10 +137,7 @@ public class ChartCentreCalculator {
 		
 		double middleLat = (latMax +latMin) / 2;
 		double middleLng = (lngMax + lngMin) /2;
-		
-//		System.out.println("latMin: " +latMin + ", " +"latMax: " + latMax);
-//		System.out.println("lngMin: " +lngMin + ", " +"lngMax: " + lngMax);
-		
+
 		return new Coordinates(middleLat, middleLng);
 	}	
 
@@ -167,7 +166,13 @@ public class ChartCentreCalculator {
 		}
 		return coords;
 	}
-	
+
+
+	/*
+	 * (-)180 degrees is the maximum (minimum) value for Longitude.
+	 * It is (-)90 for Latitude but used the same for both for clarity
+	 * (does not make any difference in this case).
+	 */
 	private double findMax(List<Double> list) {
 		double max = -180;
 		for(double d : list) {

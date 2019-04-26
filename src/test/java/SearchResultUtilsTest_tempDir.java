@@ -32,8 +32,13 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/*
+ * Tests content of the file with search result saved in it.
+ * Uses @TempDir functionality offered by JUnit5.
+ */
+
 public class SearchResultUtilsTest_tempDir {
-    String expected =  "";
+    String expected;
     File file;
 
 
@@ -98,11 +103,7 @@ public class SearchResultUtilsTest_tempDir {
         int random  = new Random().nextInt(100000);
         Path output = tempDir.resolve("test_write_file_" + random + ".txt");
         file = new File(output.toString());
-        System.out.println(file.getAbsolutePath());
-        /*
-        used instead @TempDir annotation
-        File file = new File("src/test/resources/temp/SearchResultUtils/test_write_file_" + random + ".txt");
-        */
+
         try {
             file.createNewFile();
         } catch (IOException e) {

@@ -45,6 +45,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 import org.w3c.dom.Document;
@@ -68,29 +69,14 @@ import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-//import java.io.InputStreamReader;
-//import java.io.Reader;
-//import java.net.URLConnection;
-
 public class WebPaneController implements Initializable{
-//	public static String API_KEY = "no default key";
-//	public static String CONFIG_PATH = "src/main/config/user_data/config.properties";
-//	private static String FILE_PATH = "src/main/config/user_data/snc_catalogue.xml";
-//	private static String DB_PATH = "src/main/config/user_data/snc_catalogue.db";
-//	public final String UKHO_HOME = "https://enavigator.ukho.gov.uk/";
-//	public final String UKHO_LOGIN = "https://enavigator.ukho.gov.uk/Login";
-//	public final String UKHO_DOWNLOAD = "https://enavigator.ukho.gov.uk/Download";
-//	public final String FILE_PARAM = "?file=";
-
+	private static final org.apache.log4j.Logger log = Logger.getLogger(WebPaneController.class);
 	LocalDateTime localDateTime;
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
 
-    String setUsername =  "document.getElementsByName('un')[0].value='" + "PiotrC" + "'";
-    String setPassword = "document.getElementsByName('pw')[0].value='" + "flamenco10ST" + "';";
-
     WebEngine webEngine;
     final BooleanProperty loginAttempted = new SimpleBooleanProperty(false);
-    Downloader2 downloader = new Downloader2();
+    LoginCheck downloader = new LoginCheck();
     Preferences userPreferences = Preferences.userRoot().node(ConfigPaths.PREFERENCES.getPath());
     Task<Void> downloadTask;
     Task<UKHOCatalogueFile> fileLoadTask;
@@ -149,7 +135,10 @@ public class WebPaneController implements Initializable{
 	}
 
 
-
+	/*
+	 * Checks if there are any file paths in ./user.data/config.properties file and
+	 * if so assignes them to the right property in ConfigPaths enum type
+	 */
 	private void configurePaths() {
 		ConfigPaths.XML.setPath(FileUtils.readXMLPath(ConfigPaths.CONFIG.getPath(), ConfigPaths.XML.getPath()));
 		ConfigPaths.DATABASE.setPath(FileUtils.readDBPath(ConfigPaths.CONFIG.getPath(), ConfigPaths.DATABASE.getPath()));
@@ -158,6 +147,12 @@ public class WebPaneController implements Initializable{
 	}
 
 
+	/*
+	 * Username ans Password are kept in Registry on Windows based systems and are
+	 * unique to each logged in user. java.util.prefs.Preferences offers ~ the same
+	 *  level of protection as applies to all user files - only the system administrator
+	 * can view it. For the purpose of this application it is considered sufficient.
+	 */
 	private void configureCredentials() {
 		checkboxDontRememeber.setSelected(false);
 		if(!userPreferences.get("username", "").equals("") && !userPreferences.get("password", "").equals("")) {
@@ -168,6 +163,7 @@ public class WebPaneController implements Initializable{
             textPassword.setText(userPreferences.get("password", ""));
         }
 	}
+
 
 	private void configureWebView() {
 		rectangleCover.setVisible(true);
@@ -180,6 +176,12 @@ public class WebPaneController implements Initializable{
         webEngine = webView.getEngine();
 		webEngine.setJavaScriptEnabled(true);
 
+
+		/*
+		 * Listens for a change of loaded URL, extracts form input fields and fills
+		 * them in with username and password. Input fields ids "un" and "pw"
+		 * have been taken from UKHO login website.
+		 */
 		webEngine.documentProperty().addListener(new ChangeListener<Document>() {
             @Override
             public void changed(ObservableValue<? extends Document> ov, Document oldDoc, Document doc) {
@@ -220,6 +222,10 @@ public class WebPaneController implements Initializable{
         });
 	}
 
+	/*
+	 * Load existing chart database characteristic info in order to compare it later
+	 * with the one available on the UKHO download page
+	 */
 	private void readExistingDB() {
 		String dbPath = FileUtils.readDBPath(ConfigPaths.CONFIG.getPath(), ConfigPaths.DATABASE.getPath());
 		database = Database.getDatabaseInstance(dbPath);
@@ -231,6 +237,11 @@ public class WebPaneController implements Initializable{
 		}
 	}
 
+	/*
+	 * Checks if the log in was successful and if so enabling 'Download' button.
+	 * Also erases username and password from Registry (Preference class)
+	 * if the box is ticked off.
+	 */
 	private void configureButtons() {
 
 		buttonDownload.setDisable(true);
@@ -261,7 +272,11 @@ public class WebPaneController implements Initializable{
 
 	    });
 
-
+		/*
+		 * Attempts to download the latest available chart catalogue showing progress,
+		 * Once that is completed checks id this catalogue is newer than the existing
+		 * one and offers to update the database, also showing progress.
+		 */
 	    buttonDownload.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){
@@ -333,6 +348,9 @@ public class WebPaneController implements Initializable{
 			}
 		});
 
+		/*
+		 * This cancels the download process (not the database updating process)
+		 */
 	    buttonCancel.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){
@@ -349,7 +367,13 @@ public class WebPaneController implements Initializable{
 			}
 		});
 
-	    buttonUpdate.setOnAction(new EventHandler<ActionEvent>(){
+		/*
+		 * Updates the database with newly downloaded catalogue and loads
+		 * charts into memory as a Map<String, Chart> for faster access.
+		 * Also writes paths of the downloaded file and updated database
+		 * into config.properties file with a time stamped name.
+		 */
+		buttonUpdate.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){
 				final String catalogueDate = ukhoCatalogueFile.getBaseFileMetadata().getMD_DateStamp();
@@ -400,8 +424,11 @@ public class WebPaneController implements Initializable{
 		        thread.start();
 			}
 		});
-	    
-	    buttonStop.setOnAction(new EventHandler<ActionEvent>(){
+
+		/*
+		 * Cancels updating database process.
+		 */
+		buttonStop.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){	
 				progressIndicator.progressProperty().unbind();
@@ -411,8 +438,11 @@ public class WebPaneController implements Initializable{
 				buttonUpdate.setVisible(true);		
 			}
 		});
-	    
-	    buttonClose.setOnAction(new EventHandler<ActionEvent>(){
+
+		/*
+		 * Closes the mapPane window
+		 */
+		buttonClose.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){	
 				progressIndicator.progressProperty().unbind();
@@ -420,8 +450,12 @@ public class WebPaneController implements Initializable{
 				stage.close();
 			}
 		});
-	    
-	    buttonDelete.setOnAction(new EventHandler<ActionEvent>(){
+
+		/*
+		 * Attempt to delete existing catalogue file if it blocks saving
+		 * the new one.
+		 */
+		buttonDelete.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent e){	
 				try {
@@ -456,7 +490,10 @@ public class WebPaneController implements Initializable{
 		});
 	        
 	}
-	
+
+	/*
+	 * Parsing chart catalogue from an xml file as UKHOCatalogueFile object.
+	 */
 	private UKHOCatalogueFile loadFileFromPath(String FILE_PATH) {
 		File file;
 		UKHOCatalogueFile ukhoCatalogueFile = null;
@@ -482,33 +519,10 @@ public class WebPaneController implements Initializable{
 
         return ukhoCatalogueFile;
 	}
-	
-	// not used for the time being
-	private UKHOCatalogueFile loadFileFromPathWithTask(String FILE_PATH) {
-		fileLoadTask = new FileLoadTask(FILE_PATH);
-		
-		fileLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
-				new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent t) {					
-				ukhoCatalogueFile = fileLoadTask.getValue();
-				}
-			});
-		fileLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED, 
-							new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent t) {
-			
-			}
-		});
-		
-		Thread thread = new Thread(fileLoadTask);
-        thread.setDaemon(true);
-        thread.start();
-		
-		return ukhoCatalogueFile;
-	}
-	
+
+	/*
+	 * Switches off SSL requirements while logging in to UKHO website
+	 */
 	private void connectionConfig() {
 		ConnectionUtils connUtils = new ConnectionUtils();
 		connUtils.sslOff();
@@ -517,23 +531,15 @@ public class WebPaneController implements Initializable{
 	private boolean notEmpty(String s) {
         return s != null && !"".equals(s);
     }
-	
-	// not used
-	Runnable afterLoginTask = new Runnable() {
-        @Override
-		public void run() {
-            afterLogin();
-        }
-    };
-    
-    
-    private void afterLogin() {
-    	if(downloader.loginCheck(ConfigPaths.UKHO_DOWNLOAD.getPath())) {
-       	 System.out.println("file link: " + downloader.getUrlByIdJSOUP(ConfigPaths.UKHO_DOWNLOAD.getPath()) +
+
+	/*
+	 * Saves or clears user's login details after successful login.
+	 */
+	private void afterLogin() {
+    	if(downloader.check(ConfigPaths.UKHO_DOWNLOAD.getPath())) {
+       	 log.info("Catalogue file link: " + downloader.getUrlByIdJSOUP(ConfigPaths.UKHO_DOWNLOAD.getPath()) +
        			 " contains: "  + ConfigPaths.FILE_PARAM.getPath());
        	 buttonDownload.setDisable(false);
-//       	 buttonCancel.setDisable(false);
-       	 
        	 if(checkboxDontRememeber.isSelected()){
 	        	 try {
 					userPreferences.clear();
@@ -548,31 +554,28 @@ public class WebPaneController implements Initializable{
             }
         }
     }
-    
+
+	/*
+	 * Loads charts into a Map<String, StandardNauticalChart> from database
+	 */
 	public void loadChartsIntoMemory() {
-//		database = Database.databaseInstance;
 		if (database == null || !database.hasRepository(AppDTO.class)) {
 			System.out.println("--------------------database == null || !database.hasRepository(AppDTO.class)");
 			return;
 		} else {
 			ChartMapLoadTask chartMapLoadTask = new ChartMapLoadTask(database);
-//			buttonSearchChart.setDisable(true);
 
 			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
 					new EventHandler<WorkerStateEvent>() {
 						@Override
 						public void handle(WorkerStateEvent t) {
 							ChartMap.all = chartMapLoadTask.getValue();
-//					buttonSearchChart.setDisable(false);
-							System.out.println(
-									"+++++++++++++++++++++ChartMap loaded into memory, " + ChartMap.all.size());
 						}
 					});
 			chartMapLoadTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED,
 					new EventHandler<WorkerStateEvent>() {
 						@Override
 						public void handle(WorkerStateEvent t) {
-
 						}
 					});
 			Thread thread = new Thread(chartMapLoadTask);
@@ -580,16 +583,11 @@ public class WebPaneController implements Initializable{
 			thread.start();
 		}
 	}
-    
-	
-	
+
 }
 	
 	
 	
-	
-
-//	https://enavigator.ukho.gov.uk  MDSPages_linkDlPaperXml
 
 
 

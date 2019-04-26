@@ -30,8 +30,13 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/*
+ * Tests content of the file with search result saved in it.
+ * Uses a folder created in test resources.
+ */
+
 public class SearchResultUtilsTest {
-    String expected =  "";
+    String expected;
     File file;
 
 

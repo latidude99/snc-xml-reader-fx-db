@@ -30,6 +30,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
+/*
+ * Used for parsing an XML catalogue file (JAXB).
+ * Mapping methods:
+ * 		- public Document write(NitriteMapper mapper)
+ * 		- public void read(NitriteMapper mapper, Document document)
+ * required by Nitrite Database in order to avoid reflection
+ * being used when converting objects into Documents and saving,
+ * updating or  searching.
+ * Speed gain turned out not to be that significant.
+ */
+
 @XmlRootElement(name = "address")
 @XmlType(propOrder={"deliveryPoint", "city", "administrativeArea", "postalCode", "country", "electronicMailAddress"})
 public class Address implements Serializable, Mappable{

@@ -20,6 +20,7 @@
 
 package com.latidude99.sncxmlreader.controller;
 
+import com.latidude99.sncxmlreader.app.Log;
 import com.latidude99.sncxmlreader.utils.ConfigPaths;
 import com.latidude99.sncxmlreader.db.ChartMap;
 import com.latidude99.sncxmlreader.db.DBLoaderTask;
@@ -66,16 +67,11 @@ import java.util.ResourceBundle;
 
 
 public class MainPaneController implements Initializable {
-//    private static String API_KEY = ConfigPaths.API_KEY.getPath();
-//   private static final String ConfigPaths.CONFIG.getPath() = "user.data/config.properties";
-//    private static String ConfigPaths.XML.getPath() = "user.data/xml/snc_catalogue.xml";
-//    private static String DB_PATH = "user.data/db/snc_catalogue.db";
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
     private static final String SINGLE = "=";
     private static final String SMALLER_SCALE = "-";
     private static final String LARGER_SCALE = "+";
     private static final String RANGE = "range";
-
 
     ObjectRepository<StandardNavigationChart> chartRepository;
     ObjectRepository<BaseFileMetadata> metaRepository;
@@ -84,7 +80,6 @@ public class MainPaneController implements Initializable {
     FileLoadTask fileLoadTask;
     DBLoaderTask dbLoaderTask;
     ChartMapLoadTask chartMapLoadTask;
-    ChartsLoadedCheckTask chartsLoadedCheckTask;
 
     public void setDatabase(Nitrite database) {
         this.database = database;
@@ -101,7 +96,6 @@ public class MainPaneController implements Initializable {
 
 
     WebPaneController webPaneController;
-
     SplashPaneController splashPaneController;
     Button buttonSplash;
     Label labelSplash;
@@ -116,7 +110,7 @@ public class MainPaneController implements Initializable {
     private File fileLoad = null;
 
     Charset charset;
-    private FileChooser fileChooser = new FileChooser();
+    FileChooser fileChooser = new FileChooser();
     UKHOCatalogueFile ukhoCatalogueFile;
     Map<String, StandardNavigationChart> standardCharts;
     BaseFileMetadata meta;
@@ -160,7 +154,9 @@ public class MainPaneController implements Initializable {
         configureProcessing();
     }
 
-
+    /*
+     * Reads API_KEY for Googl Maps Javascript API and saves it as Enum type
+     */
     public void initialSettings() {
         String apiKey = FileUtils.readApiKey(ConfigPaths.CONFIG.getPath(), ConfigPaths.API_KEY.getPath());
         ConfigPaths.API_KEY.setPath(apiKey);
@@ -185,9 +181,12 @@ public class MainPaneController implements Initializable {
         progressSearch = contentPaneController.getProgressSearch();
     }
 
-
+    /*
+     * Reads database file path in config.properties and if finds it loads
+     * the database file, otherwise initializes empty database object.
+     */
     public void dbInit() {
-        org.apache.log4j.BasicConfigurator.configure();
+        Log.log4jConfig();
         buttonSearchChart.setDisable(true);
         String dbPath = FileUtils.readDBPath(ConfigPaths.CONFIG.getPath(), ConfigPaths.DATABASE.getPath());
         database = Nitrite.builder()
@@ -198,14 +197,20 @@ public class MainPaneController implements Initializable {
         chartRepository = database.getRepository(StandardNavigationChart.class);
         metaRepository = database.getRepository(BaseFileMetadata.class);
         appDTORepository = database.getRepository(AppDTO.class);
-        System.out.println("appDTORepository.find().size(): " + appDTORepository.find().size());
         dbFilesCleanup(dbPath);
     }
 
     /*
-     Loading data parsed from  snc_catalogue.xml to Nitrite DB (object repository)
-     if there is no catalogue loaded in DB
-    */
+     * Loading data parsed from  snc_catalogue.xml to Nitrite DB (object repository)
+     * if there is no catalogue loaded in the database.
+     *
+     * appDTORepository serves as a flag  - if 1 then database has already been
+     * loaded up with a UKHOCatalogueFile object (parsed from an XML catalogue file).
+     *
+     * chartRepository.size() < 3900 - a crude check if the number of charts is ~ ok,
+     * if loading up proces was interrupted than charts number would be less than that
+     * (this check requires change for a more robust one, without a hardcoded value).
+     */
     public void startup() {
         if (appDTORepository.find().size() < 1 || chartRepository.size() < 3900) {
             String filePath = FileUtils.readXMLPath(ConfigPaths.CONFIG.getPath(), ConfigPaths.XML.getPath());
@@ -218,8 +223,6 @@ public class MainPaneController implements Initializable {
     }
 
     public void loadChartsIntoMemory() {
-//		database = Database.databaseInstance;
-//		database = Database.databaseInstance;
         if (database == null || !database.hasRepository(AppDTO.class)) {
             System.out.println("--------------------database == null || !database.hasRepository(AppDTO.class)");
             return;
@@ -249,10 +252,12 @@ public class MainPaneController implements Initializable {
         }
     }
 
+    /*
+     * fileTemp sets the initial starting folder for FileChooser
+     */
     public void configureIO() {
         chartUtils = new ChartUtils();
         fileTmp = new File(ConfigPaths.USER.getPath() + ".");
-
 
         buttonLoadFile.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -287,6 +292,9 @@ public class MainPaneController implements Initializable {
             }
         });
 
+        /*
+         * Opens a new window with Google Maps and chart polygons
+         */
         buttonChartMap.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -318,13 +326,13 @@ public class MainPaneController implements Initializable {
             public void handle(ActionEvent event) {
                 if (ChartMap.all != null && ChartMap.all.size() > 3800)
                     setInfoAfterDBLoaded();
+                    buttonSearchChart.setDisable(false);
             }
         });
 
         buttonSearchChart.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                System.out.println("textSearchChart.getText(): " + textSearchChart.getText());
                 searchCharts();
             }
         });
@@ -334,8 +342,6 @@ public class MainPaneController implements Initializable {
             public void handle(KeyEvent event) {
                 if (event.getCode().equals(KeyCode.ENTER)) {
                     searchCharts();
-                    if (ChartMap.all != null)
-                        buttonSearchChart.setDisable(false);
                 }
             }
         });
@@ -359,7 +365,11 @@ public class MainPaneController implements Initializable {
         setDateLabels(meta);
     }
 
-
+    /*
+     * An updated chart catalogue is issued every week or so, hence warning
+     * is set if it is older than 8 days. It is not unusable after that
+     * but important changes may be missed.
+     */
     private void setDateLabels(BaseFileMetadata meta) {
         String catalogueDateString = meta.getMD_DateStamp();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -382,7 +392,12 @@ public class MainPaneController implements Initializable {
         }
     }
 
-
+    /*
+     * This saves only text result of the searched charts in a .txt file
+     * (what is visible in the text area) as opposed to a fylly formed
+     * HTML file that is saved when you open Google Maps window. It is
+     * also not saved automatically but manually.
+     */
     private void saveSearch(File file) {
         String filePath = "";
         if (textResult.getText() == null) {
@@ -400,15 +415,14 @@ public class MainPaneController implements Initializable {
     }
 
 
-
+    /*
+     * Used to show progress of parsing and loading charts up to the database.
+     */
     private void loadPaneSplash() {
         try {
             URL splashPaneUrl = getClass().getResource("/fxml/splashPane.fxml");
             FXMLLoader fxmlLoader = new FXMLLoader();
-
             splashPaneController = new SplashPaneController();
-            //	    splashPaneController.setMainPaneController(this);
-
             fxmlLoader.setController(splashPaneController);
             fxmlLoader.setLocation(splashPaneUrl);
 
@@ -418,7 +432,7 @@ public class MainPaneController implements Initializable {
             stageSplash.initStyle(StageStyle.UNDECORATED);
 
             Scene scene = new Scene(paneSplash);
-//	     	scene.setFill(Color.TRANSPARENT);
+//	     	scene.setFill(Color.TRANSPARENT); // not necessary after all
             scene.setFill(null);
             stageSplash.initStyle(StageStyle.TRANSPARENT);
             stageSplash.setScene(scene);
@@ -430,10 +444,13 @@ public class MainPaneController implements Initializable {
         }
     }
 
+    /*
+     * Looks for a catalogue xml file according to the path read from
+     * config.properties file and parses it if found.
+     */
     private UKHOCatalogueFile loadFileFromPath(String filePath) {
         File file;
         UKHOCatalogueFile ukhoCatalogueFile = null;
-
         try {
             file = new File(filePath);
             long fileSize = file.length();
@@ -454,11 +471,17 @@ public class MainPaneController implements Initializable {
                     "(see APP_FOLDER/user_data/config.txt for information about how to do it correctly)");
             io.printStackTrace();
         }
-
         return ukhoCatalogueFile;
     }
 
-
+    /*
+     * Creates a new file every time a database is created / updated with a new catalog. The database
+     * file is time stamped, down to single seconds. This way is way faster than looking for changed
+     * entries and updating. The new file path is written to the config.properties file. After the
+     * database is loaded up all charts are loaded in a Map <chartNumber, chart> (to speed up
+     * search process, searching the database in this case is about 3 times slower than searching a Map)
+     * Memory usage is about the same.
+     */
     private Nitrite loadDBFromFile(UKHOCatalogueFile ukhoCatalogueFile, String filePath, String dbPath) {
         database.close();
         ukhoCatalogueFile = loadFileFromPath(filePath);
@@ -485,11 +508,6 @@ public class MainPaneController implements Initializable {
             splashPaneController.getButtonSplash().setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
-/*					textResult.setText(dbLoaderTask.messageProperty().getValue().toString()
-							+ "\n\nLoading charts from an XML catalogue into the Database has been interrupted.\n"
-							+ "Load the XML catalogue manually or restart the SncXmlReader to try again.\n"
-							+ "If you do not have an XML catalogue file please download it form the UKHO website.\n");
-*/
                     splashPaneController.getButtonSplash().setText("Close Window");
                     dbLoaderTask.cancel();
                     Stage stage = (Stage) splashPaneController.getButtonSplash().getScene().getWindow();
@@ -505,19 +523,15 @@ public class MainPaneController implements Initializable {
                             setDatabase(database);
                             Database.databaseInstance = database;
                             ConfigPaths.DATABASE.setPath(dbPathNew);
-                            System.out.println(database.getContext().toString());
                             chartRepository = database.getRepository(StandardNavigationChart.class);
                             metaRepository = database.getRepository(BaseFileMetadata.class);
                             appDTORepository = database.getRepository(AppDTO.class);
-                            System.out.println("NEW - appDTORepository.find().size(): " + appDTORepository.find().size());
                             splashPaneController.getProgressSplash().progressProperty().unbind();
                             splashPaneController.getLabelSplash().textProperty().unbind();
                             splashPaneController.getLabelSplash().setText("Database updated.");
                             splashPaneController.getButtonSplash().setText("Close Info.");
                             setInfoAfterDBLoaded();
                             loadChartsIntoMemory();
-                            System.out.println("ConfigPaths.DATABASE.getPath(): " + ConfigPaths.DATABASE.getPath());
-                            System.out.println("dbPathNew: " + dbPathNew);
                             FileUtils.writeConfig(filePath, dbPathNew, ConfigPaths.API_KEY.getPath());
                         }
                     });
@@ -532,7 +546,6 @@ public class MainPaneController implements Initializable {
                                     + "Load the XML catalogue manually or restart the SncXmlReader to try again.\n"
                                     + "If you do not have an XML catalogue file please download it form the UKHO website.\n");
                             splashPaneController.getButtonSplash().setText("Close Window");
-                            //		FileUtils.writeConfig(filePath, ConfigPaths.DATABASE.getPath());
                         }
                     });
 
@@ -546,31 +559,35 @@ public class MainPaneController implements Initializable {
                                     + "If you do not have an XML catalogue file please download it form the UKHO website.\n");
                             splashPaneController.getButtonSplash().setText("Close Window");
                             FileUtils.writeConfig(filePath, ConfigPaths.DATABASE.getPath(), ConfigPaths.API_KEY.getPath());
-//					dbLoaderTask.getException().printStackTrace();
                         }
                     });
 
             Thread thread = new Thread(dbLoaderTask);
             thread.setDaemon(true);
             thread.start();
-        } else {
-
         }
+
         return database;
     }
 
+    /*
+     * Checks for some edge cases (empty input but also 'all' charts) and if
+     * full info is needed. Also does initial processing detecting what type of search
+     * user wants to conduct (last character in the input string): exact ('='), smaller scale ('-'),
+     * smaller scale ('-'), larger scale ('+') or full range (no special character).
+     * The special character then is removed and the input string is passed for further processing
+     * on a separate thread.
+     */
     private void searchCharts() {
         String input = textSearchChart.getText().trim();
         if(input == null || "".equals(input)){
             MessageBox.show("Choose a chart number!", "Info");
             return;
         }
-
         String inputRaw = input;
         String searchType = inputRaw.substring(inputRaw.length() - 1, inputRaw.length());
         if (searchType.equals(SINGLE) || searchType.equals(SMALLER_SCALE) || searchType.equals(LARGER_SCALE))
             input = inputRaw.substring(0, inputRaw.length() - 1);
-
         if (ChartMap.all == null) {
 
             MessageBox.show("The UKHO Standard Navigation Chart catalogue has not been loaded into memory yet.\n"
@@ -584,12 +601,8 @@ public class MainPaneController implements Initializable {
                     + "or your computer does not have sufficient amount of RAM");
             return;
         }
-
         boolean fullInfo = checkboxInfo.isSelected();
         textResult.clear();
-
-        System.out.println("searchType: " + searchType + ", " + "input: " + input);
-
         switch (searchType) {
             case SINGLE:
                 chartSearchTask = new ChartSearchTask(database, input, fullInfo, SINGLE);
@@ -603,11 +616,6 @@ public class MainPaneController implements Initializable {
             default:
                 chartSearchTask = new ChartSearchTask(database, input, fullInfo, RANGE);
         }
-
-
-        // same as chartSearchTask but on the main app thread
-//		textResult.setText(chartUtils.displayChartRange(ConfigPaths.DATABASE.getPath(), searchInput, fullInfo));
-
         textResult.textProperty().bind(chartSearchTask.messageProperty());
         progressSearch.progressProperty().bind(chartSearchTask.progressProperty());
 
@@ -633,33 +641,19 @@ public class MainPaneController implements Initializable {
         thread.start();
     }
 
-    // not used now
-    private void chartsLoadedCheck() {
-
-        chartsLoadedCheckTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
-                new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent t) {
-                        textResult.textProperty().unbind();
-                        setInfoAfterDBLoaded();
-                        buttonSearchChart.setVisible(true);
-                    }
-                });
-        chartsLoadedCheckTask.addEventHandler(WorkerStateEvent.WORKER_STATE_FAILED,
-                new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent t) {
-
-                    }
-                });
-
-        Thread thread = new Thread(chartsLoadedCheckTask);
-        thread.setDaemon(true);
-        thread.start();
-    }
-
+    /*
+     *
+     * Due to the way the database is managed in this app it creates a new file
+     * every time a catalog file is parsed and loaded up. Hence the need for
+     * a file cleanup. It deletes all the automatically created old database files
+     * (those that follow the naming pattern) apart form the last one (current)
+     * and the file named "snc_catalogue.db" (for legacy reasons). It also leaves
+     * alone all the files that do not follow the naming pattern (created/copied
+     * manually). The namig pattern example:
+     * 'snc_catalogue_date_2019-04-09_loaded_on_2019-04-20 10.30.45.db'
+     * (see loadDBFromFile() method for details.
+     */
     private void dbFilesCleanup(String dbPath){
-
         FileCleanupTask fileCleanupTask = new FileCleanupTask(dbPath);
 
         fileCleanupTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,

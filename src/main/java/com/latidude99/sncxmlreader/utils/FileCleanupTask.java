@@ -21,6 +21,7 @@
 package com.latidude99.sncxmlreader.utils;
 
 import javafx.concurrent.Task;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -32,8 +33,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/* Deletes all old database files that were created automatically when creating
+ * and loading up database with objects from parsed xml file.
+ * Leaves only the latest and the file with the name passed as parameter.
+ */
 public class FileCleanupTask extends Task<Void> {
+    private static final org.apache.log4j.Logger log = Logger.getLogger(FileCleanupTask.class);
     private String dbName;
+    int count;
 
     public FileCleanupTask(String dbPath){
         if(dbPath != null && dbPath.contains("/")){
@@ -44,14 +51,9 @@ public class FileCleanupTask extends Task<Void> {
             dbName = dbPath;
     }
 
-    public String getDbName(){
-        return dbName;
-    }
-
     @Override
     protected Void call() {
         try{
-//            deleteFiles(ConfigPaths.USER_XML_FOLDER.getPath());
             deleteFiles(ConfigPaths.USER_DB_FOLDER.getPath(), dbName);
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,13 +63,14 @@ public class FileCleanupTask extends Task<Void> {
 
     @Override
     protected void failed() {
-
+        log.error("Error while deleting old database files");
     }
 
     @Override
     protected void succeeded() {
-
+        log.info("Successfully deleted: " + count + " files");
     }
+
     public void deleteFiles(String path, String dbName){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
         Map<LocalDateTime, File> filesToClean = new HashMap<>();
@@ -76,13 +79,13 @@ public class FileCleanupTask extends Task<Void> {
         LocalDateTime latestDateTime = LocalDateTime.of(1500, Month.JANUARY, 01, 0, 0, 0);
         List<String> names = new ArrayList<>();
         File[] files = new File(path).listFiles();
-        System.out.println("files.length: " + files);
         for (File file : files) {
             if (file.isFile()) {
                 names.add(file.getName());
             }
         }
-        System.out.println(names);
+
+        log.warn("Files to be deleted (" + names.size() + "): " + names);
 
         for(File file : files){
             String name = file.getName();
@@ -91,24 +94,26 @@ public class FileCleanupTask extends Task<Void> {
             if(name.contains("snc_catalogue_date_") && name.contains("_loaded_on_")){
                 try{
                     fileDateTime = LocalDateTime.parse(fileDateTimeString, formatter);
-                    System.out.println(fileDateTimeString + ", " + fileDateTime);
                     filesToClean.put(fileDateTime, file);
                     if(fileDateTime.isAfter(latestDateTime))
                         latestDateTime = fileDateTime;
- //                   System.out.println("latestDateTime: " + latestDateTime);
                 } catch (DateTimeParseException e){
-                   // System.out.println(e.getMessage());
+                    file.delete();
+                   log.error(e.getMessage());
                 }
-
             }else if (!name.equals(dbName)){
                 file.delete();
+                count++;
             }
         }
+
+        log.info("File with latestDateTime will not be deleted: " + latestDateTime);
 
         for(LocalDateTime dateTime : filesToClean.keySet()){
             if(!dateTime.equals(latestDateTime)){
                 fileToDelete = filesToClean.get(dateTime);
                 fileToDelete.delete();
+                count++;
             }
         }
     }

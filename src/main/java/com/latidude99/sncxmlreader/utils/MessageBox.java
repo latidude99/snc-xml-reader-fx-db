@@ -26,6 +26,11 @@ import javafx.scene.layout.*;
 import javafx.scene.control.*;
 import javafx.geometry.*;
 
+/*
+ * Generic message box used to present info/warning/error messages
+ * to the user. Has to be dismissed to continue.
+ */
+
 public class MessageBox {
     public static void show(String message, String title) {
         

@@ -60,7 +60,6 @@ public class SplashPaneController implements Initializable{
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
 		progressSplash.setStyle("-fx-progress-color: fuchsia;");
-		System.out.println(labelSplash.getText());
 	}
 	
 	

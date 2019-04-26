@@ -22,6 +22,7 @@ package com.latidude99.sncxmlreader.utils;
 
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 import javafx.concurrent.Task;
+import org.apache.log4j.Logger;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 
@@ -29,14 +30,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/*
+ * Loads charts form database chart repository to a chart Map<String, StandardNavigationChart>
+ * (used during application startup) kept in memory untill the app is stopped.
+ */
 public class ChartMapLoadTask extends Task<Map<String, StandardNavigationChart>> {
+    private static final org.apache.log4j.Logger log = Logger.getLogger(ChartMapLoadTask.class);
 	Nitrite database;
 	List<StandardNavigationChart> chartList;
 	Map<String, StandardNavigationChart> chartMap;
-	
-	
-	
-	
+
 	public ChartMapLoadTask(Nitrite database) {
 		this.database = database;
     }
@@ -56,12 +59,12 @@ public class ChartMapLoadTask extends Task<Map<String, StandardNavigationChart>>
 
     @Override
     protected void failed() {
-    	System.out.println("ChartMap NOT loaded from Database: " + chartList.size() + ", charts: ");
+    	log.error("ChartMap NOT loaded from Database: " + chartList.size() + ", charts: ");
     }
 
     @Override
     protected void succeeded() {
-       System.out.println("ChartMap loaded from Database: " + chartList.size() + ", charts: ");
+       log.info("ChartMap loaded from Database: " + chartList.size() + ", charts: ");
     }
     
     

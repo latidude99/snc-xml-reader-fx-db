@@ -26,7 +26,10 @@ public class Database {
 	public static Nitrite databaseInstance;
 	
 	private Database() {};
-	
+
+	/*
+	 * Reads database from file or creates a new one if no file is found.
+	 */
 	public static Nitrite getDatabaseInstance(String dbPath) {
 		if(databaseInstance == null) {
 			databaseInstance = Nitrite.builder()

@@ -29,19 +29,21 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class Downloader2 {
-	public final String DOWNLOAD_LINK_BASE = "https://enavigator.ukho.gov.uk/";
-//	public final String FILE_NAME = "snc_catalogue.xml";
-	
-	
-	public boolean loginCheck(String downloadPageString) {
+public class LoginCheck {
+
+	/*
+	 * Links on the UKHO download website are generated dynamically
+	 * once the user logged in successfully. Element "MDSPages_linkDlPaperXml"
+	 * appears only after the user is logged in and this method uses it to check
+	 * if the login was successful.
+	 */
+	public boolean check(String downloadPageString) {
 		Element link = null;
 		try {
 			URL downloadPageUrl = new URL(downloadPageString);
 			Document doc = Jsoup.parse(downloadPageUrl, 5000);
 			link = doc.getElementById("MDSPages_linkDlPaperXml");
 			if(link == null) {
-//				MessageBox.show("Username or/and Password incorrect", "Warning");
 				return false;
 			}
 		} catch (IOException e) {
@@ -49,20 +51,10 @@ public class Downloader2 {
 		}
 		return true;	
 	}
-	
-	public String downloadXML(String url) {
-		URL downloadUrl = null;
-		try {
-			downloadUrl = new URL(getUrlByIdJSOUP(url));
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Downloading file ...  " + downloadUrl);
-		File file = new File(ConfigPaths.XML.getPath());
-		file = download(downloadUrl, file);
-		return "File saved in " + file.getAbsolutePath() + ", " + file.toString();
-	}
-	
+
+	/*
+	 * Extracts dynamically created download link to the latest catalogue version.
+	 */
 	public String getUrlByIdJSOUP(String downloadPageString) {
 		String url = "";
 		Element link = null;
@@ -71,16 +63,15 @@ public class Downloader2 {
 			Document doc = Jsoup.parse(downloadPageUrl, 5000);
 			link = doc.getElementById("MDSPages_linkDlPaperXml");
 			url = link.attr("href");
-			System.out.println(link.text());
-			System.out.println(url);
-						
 		} catch (IOException | NullPointerException e) {
 			e.getMessage();
-//			MessageBox.show("Username or/and Password incorrect", "Warning");
 		}
-		return DOWNLOAD_LINK_BASE + url;	
+		return ConfigPaths.UKHO_HOME + url;
 	}
-	
+
+	/*
+	 * Not used for the moment.
+	 */
 	private File download(URL url, File downFile) {
 		Reader reader = null;
 		StringBuilder buffer = new StringBuilder();
@@ -101,6 +92,22 @@ public class Downloader2 {
         }
 		return downFile;
 	}
+
+	/*
+	 * Not used for the moment.
+	 */
+	public String downloadXML(String url) {
+		URL downloadUrl = null;
+		try {
+			downloadUrl = new URL(getUrlByIdJSOUP(url));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		File file = new File(ConfigPaths.XML.getPath());
+		file = download(downloadUrl, file);
+		return "File saved in " + file.getAbsolutePath() + ", " + file.toString();
+	}
+
 
 }
 

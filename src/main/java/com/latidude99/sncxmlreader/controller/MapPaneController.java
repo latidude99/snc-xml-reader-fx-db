@@ -36,43 +36,29 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
-/*
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URLConnection;
-*/
-
 public class MapPaneController implements Initializable{
 	
 	@FXML
     private WebView webView;
-	
-	private static final int MAX_DISPLAYED = 10_000;
-//	private static final String ConfigPaths.HTML.getPath() = "user.data/html/";
-	
+	private static final int MAX_DISPLAYED = 1000;
 	WebEngine webEngine;
-
-	MainPaneController mainPaneController;
-	
-	public MainPaneController getMainPaneController() {
-		return mainPaneController;
-	}
-	public void setMainPaneController(MainPaneController mainPaneController) {
-		this.mainPaneController = mainPaneController;
-	}
-	
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		showChart();
-
+		showCharts();
 	}
 
-	public void showChart() {
+	/*
+	 * Creates an HTML document with Javascript script that displays charts as vector
+	 * polygons on top of Google Maps.
+	 * Limits displayed number of charts to 1000 since larger number of polygons
+	 * slows down rendering process and sometimes on slower computers stops it completely.
+	 */
+	public void showCharts() {
 		String contentNoChartsFound = contentError("No Charts Found", "");
 		String contentTooManyChartsFound = contentError(
-				"Maximum 10 charts allowed", "You are trying to display " + ChartMap.found.size() + " charts");
+				"Maximum 1000 charts allowed", "You are trying to display " + ChartMap.found.size() + " charts");
 		String contentUndisplayableCharts = contentError("You are trying to display charts 4000, 4006 or 4009",
 				"Due to their scale or projection it is not possible to display them on standard Google Maps projection (Web Mercator)");
 
@@ -86,11 +72,12 @@ public class MapPaneController implements Initializable{
         }else if(chartsToDisplay.isEmpty())
             webEngine.loadContent(contentNoChartsFound, "text/html");
 
+        // creates Javascript script for selected charts
         ScriptBlock scriptBlock = new ScriptBlock(filterOutUndisplayableCharts(chartsToDisplay));
+
+        // injects Javascript script into HTML page template
 		HTMLContent htmlContent =  new HTMLContent(scriptBlock);
 		String content =  htmlContent.getContent();
-
-
 
 		if (chartsToDisplay.size() > MAX_DISPLAYED)
 			webEngine.loadContent(contentTooManyChartsFound, "text/html");
@@ -100,7 +87,6 @@ public class MapPaneController implements Initializable{
 		}else {
 			webEngine.loadContent(content, "text/html");
 			saveHTMLInFile(ConfigPaths.HTML.getPath(), content);
-
 		}
 		System.out.println(content);
 	}
@@ -112,6 +98,10 @@ public class MapPaneController implements Initializable{
 			return false;
 	}
 
+	/*
+	 * These chart numbers are removed because displaying them is not feasible
+	 * on Web Mercator projection which is used in mapPane window.
+	 */
 	private Map<String, StandardNavigationChart> filterOutUndisplayableCharts
 			( Map<String, StandardNavigationChart>  charts){
 		charts.remove("4000");
@@ -120,6 +110,10 @@ public class MapPaneController implements Initializable{
 		return charts;
 	}
 
+	/*
+	 * Saves html content to a file, @param filePath should reflect what charts are included in the file.
+	 * If file length > 240 characters range of numbers instead individual numbers is used
+	 */
 	private boolean saveHTMLInFile(String filePath, String content) {
 		String fileName = filePath + "charts";
 		Set<String> shortNames = ChartMap.display.keySet();
@@ -149,7 +143,7 @@ public class MapPaneController implements Initializable{
 		writeFile(fileName, content);
 		return true;
 	}
-	
+
 	private static boolean writeFile(String filePath, String content) {
 		boolean isDone = false;
 		BufferedWriter bw = null;
@@ -175,6 +169,9 @@ public class MapPaneController implements Initializable{
 		return isDone;
 	}
 
+	/*
+	 * Template for showing info to the user if the charts can't be loaded and displayed
+	 */
 	private String contentError(String message1, String message2) {
 		String content = "<!DOCTYPE html>\r\n" + 
 				"<html>\r\n" + 

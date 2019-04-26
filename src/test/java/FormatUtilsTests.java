@@ -31,6 +31,10 @@ import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/*
+ * Tests correctness of user search input (String) parsing method.
+ */
+
 @DisplayName("FormatUtils - testing user search field input (String)")
 public class FormatUtilsTests {
     Set<String> expected;
@@ -51,7 +55,7 @@ public class FormatUtilsTests {
     public void parseInputTest_0(){
         final String input = "";
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, "input: empty string");
+        assertEquals(expected, actual, "error parsing empty string");
     }
 
     @Test
@@ -60,7 +64,7 @@ public class FormatUtilsTests {
         final String input = "3452";
         expected.add("3452");
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, "single number");
+        assertEquals(expected, actual, "error parsing a single number");
     }
 
     @Test
@@ -72,7 +76,7 @@ public class FormatUtilsTests {
         expected.add("5678");
         expected.add("2187");
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, "comma separated with white space");
+        assertEquals(expected, actual, "error parsing comma separated entries with white space");
     }
 
     @Test
@@ -82,7 +86,7 @@ public class FormatUtilsTests {
         for(int i = 564; i < 3453; i++)
             expected.add("" + i);
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, "dash separated with white space, " +
+        assertEquals(expected, actual, "error parsing dash separated entries with white space, " +
                 "no other characters");
     }
 
@@ -97,13 +101,13 @@ public class FormatUtilsTests {
         for(int i = 564; i < 3453; i++)
             expected.add("" + i);
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, "Multiple numbers, comma and dash separated with white space");
+        assertEquals(expected, actual, "error parsing multiple entries, comma and dash separated with white space");
     }
 
     @Test
     @DisplayName("Input String 05 : multiple numbers, comma at the beginning")
     public void parseInputTest_5(){
-        final String input = "124,324,34-39 ,570 - 564";
+        final String input = ",124,324,34-39 ,570 - 564";
         expected.add("124");
         expected.add("324");
         for(int i = 34; i < 40; i++)
@@ -111,7 +115,7 @@ public class FormatUtilsTests {
         for(int i = 564; i < 571; i++)
             expected.add("" + i);
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "comma at the beginning");
+        assertEquals(expected, actual, () -> "error parsing enrties with comma at the beginning");
     }
 
     @Test
@@ -125,7 +129,7 @@ public class FormatUtilsTests {
         for(int i = 564; i < 571; i++)
             expected.add("" + i);
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "comma at the beginning");
+        assertEquals(expected, actual, () -> "error parsing entries with dash at the beginning");
     }
 
     @ParameterizedTest
@@ -136,7 +140,7 @@ public class FormatUtilsTests {
         expected.add("!123");
         expected.add("345");
         final Set<String> actual = FormatUtils.parseInput(input);
-        assertEquals(expected, actual, () -> "comma at the beginning");
+        assertEquals(expected, actual, () -> "error parsing multiple entries with various char at the beginning");
     }
 
 

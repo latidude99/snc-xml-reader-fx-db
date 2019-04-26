@@ -56,8 +56,6 @@ public class ContentPaneController implements Initializable{
 		
 	}
 	
-	
-	
 }
 	
 		

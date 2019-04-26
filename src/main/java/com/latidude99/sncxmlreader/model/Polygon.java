@@ -30,6 +30,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Used for parsing an XML catalogue file (JAXB).
+ * Mapping methods:
+ * 		- public Document write(NitriteMapper mapper)
+ * 		- public void read(NitriteMapper mapper, Document document)
+ * required by Nitrite Database in order to avoid reflection
+ * being used when converting objects into Documents and saving,
+ * updating or  searching.
+ * Speed gain turned out not to be that significant.
+ */
+
 @XmlRootElement(name = "Polygon")
 public class Polygon implements Serializable, Mappable{
 	private static final long serialVersionUID = 7552335406525881110L;

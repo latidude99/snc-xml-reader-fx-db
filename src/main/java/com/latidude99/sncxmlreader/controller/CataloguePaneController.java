@@ -76,8 +76,10 @@ public class CataloguePaneController implements Initializable{
 		configureLinks();
 		
 	}
-	
-	
+
+	/*
+	 * Opens pane for logging in and downloading chart catalogue.
+	 */
 	private void configureButtons() {
 		buttonWebView.setOnAction(new EventHandler<ActionEvent>(){
 			@Override
@@ -95,11 +97,7 @@ public class CataloguePaneController implements Initializable{
 			    }
             }
         });
-		
-		
-	        
 	}
-	
 	
 	private void configureLinks() {
 		

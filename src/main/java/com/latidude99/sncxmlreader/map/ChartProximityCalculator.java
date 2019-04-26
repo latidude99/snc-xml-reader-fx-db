@@ -28,8 +28,15 @@ import uk.me.jstott.jcoord.LatLng;
 
 import java.util.*;
 
-//import uk.me.jstott.jcoord.LatLng;
-
+/*
+ * Calculates what charts should be included in a search result if the search
+ * is not an "exact match' type. Looks for charts of smaller scale, larger scale
+ * or smaller and larger scale limited by certain conditions (overlapping limits
+ * and distance from the centre of the searched chart).
+ * FACTOR applied to scale calculations means that SMALLER and LARGER scales values
+ * overlap a little bit so that charts of a scale slightly smaller or larger than
+ * the searched chart are not excluded from the result.
+ */
 public class ChartProximityCalculator {
 	private static final String SMALLER_SCALE = "-";
 	private static final String LARGER_SCALE ="+";
@@ -40,9 +47,17 @@ public class ChartProximityCalculator {
 	ChartCentreCalculator chartCentreCalculator = new ChartCentreCalculator();
 
 	public ChartProximityCalculator() {}
-	
-	/*******************************************************************************************************/
-	
+
+	/*
+	 * Although a parameter for the main searched chart (found earlier and passed here)
+	 * a Map<String, StandardNavigationChart> is used, only one chart will ever be passed here
+	 * at this moment. The use of a Map is meant for future development when more
+	 * search types will be introduced.
+	 *
+	 * @param chartsInputFound - chart searched by a user (and found in the catalogue already)
+	 * @param chartsToCheck - all charts in the catalogue
+	 * @param searchType - 'range', '_', '+'
+	 */
 	public Map<String, StandardNavigationChart> totalChartsProximal(Map<String, StandardNavigationChart> chartsInputFound,
 																			Map<String, StandardNavigationChart> chartsToCheck,
 																			String searchType){
@@ -70,9 +85,10 @@ public class ChartProximityCalculator {
 		}
 		return chartsProximalTotal;
 	}
-	
-	/*******************************************************************************************************/
-	
+
+	/**
+	 * Checks for charts with overlapping coverage or with the centre within the DISTANCE to the main chart centre
+	 */
 	public Map<String, StandardNavigationChart> singleChartRange(StandardNavigationChart chartInputFound, 
 														Map<String, StandardNavigationChart> chartsToCheck){
 		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();		
@@ -83,40 +99,38 @@ public class ChartProximityCalculator {
 		}
 		return chartsProximal;
 	}
-	
 
-	/*******************************************************************************************************/
-	
+	/**
+	 * Checks for charts with a smaller scale and with the centre within the 5 x DISTANCE to the main chart centre
+	 */
 	public Map<String, StandardNavigationChart> singleChartSmallerScale(StandardNavigationChart chartInputFound, 
 														Map<String, StandardNavigationChart> chartsToCheck){
 		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();		
 		for(StandardNavigationChart chartToCheck : chartsToCheck.values()) {
-			if(hasSmallerScale(FACTOR, chartInputFound, chartToCheck) && isWithinDistance(DISTANCE * 5, chartInputFound, chartToCheck)) {
+			if(hasSmallerScale(FACTOR, chartInputFound, chartToCheck) && isWithinDistance(DISTANCE * 5,
+					chartInputFound, chartToCheck)) {
 				chartsProximal.put(chartToCheck.getShortName(), chartToCheck);
 			}
 		}
 		return chartsProximal;
 	}
 
-
-	/*******************************************************************************************************/
-
-	
+	/**
+	 * Checks for charts with a larger scale and with the centre within the 5 x DISTANCE to the main chart centre
+	 */
 	public Map<String, StandardNavigationChart> singleChartLargerScale(StandardNavigationChart chartInputFound, 
 			Map<String, StandardNavigationChart> chartsToCheck){
 		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();		
 		for(StandardNavigationChart chartToCheck : chartsToCheck.values()) {
-			if(hasLargerScale(FACTOR, chartInputFound, chartToCheck) && isWithinDistance(DISTANCE * 5, chartInputFound, chartToCheck)) {
+			if(hasLargerScale(FACTOR, chartInputFound, chartToCheck) && isWithinDistance(DISTANCE * 5,
+					chartInputFound, chartToCheck)) {
 				chartsProximal.put(chartToCheck.getShortName(), chartToCheck);
 			}
 		}
 		return chartsProximal;
 	}
 
-
-	/*******************************************************************************************************/
-
-	
+	// for future development
 	private boolean isWithinScale(double factor, StandardNavigationChart chart1, StandardNavigationChart chart2) {
 		int scaleChart1 = getMinScale(chart1);
 		int scaleChart2 = getMinScale(chart2);
@@ -139,7 +153,6 @@ public class ChartProximityCalculator {
 		boolean result = false;
 		int scaleChart1 = getMinScale(chart1);
 		int scaleChart2 = getMinScale(chart2);
-		System.out.println(scaleChart1 + ", " + scaleChart2);
 		if(scaleChart1 > scaleChart2 * factor)
 			result = true;
 		return result;
@@ -231,8 +244,10 @@ public class ChartProximityCalculator {
 		else
 			return false;
 	}
-	
-	// calculates disitance between centres of 2 charts (including all panels), in km	
+
+	/*
+	 * calculates distance between centres of 2 charts (including all panels) in km
+ 	 */
 	private double calcDistance(StandardNavigationChart chart1, StandardNavigationChart chart2) {
 		LatLng latlng1 = new LatLng(chartCentreCalculator.calculateChartCentre(chart1).latitude,
 									chartCentreCalculator.calculateChartCentre(chart1).longitude);
@@ -258,7 +273,6 @@ public class ChartProximityCalculator {
 				}	
 			}	
 		}
-		
 		return scale;
 	}
 	

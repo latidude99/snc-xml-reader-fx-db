@@ -20,6 +20,13 @@
 
 package com.latidude99.sncxmlreader.map;
 
+/*
+ * Composes an HTML document that consist of a the head, body and script parts.
+ * The head (including the style) and the body with the map cancas elemet are
+ * the same for all generated documents.
+ * Scripts are generated depending on specific charts to be displayed. It contains
+ * also Google Maps Javascript API (read from config.properties file).
+ */
 public class HTMLContent {
 	private String script;
 	private String htmlBlockStart;

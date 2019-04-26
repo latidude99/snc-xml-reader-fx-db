@@ -31,6 +31,11 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+ * Tests deleting old database files
+ * Uses @TempDir functionality offered by JUnit5.
+ */
+
 public class FileCleanupTaskTests_tempDir {
     @TempDir
     Path tempDir;
@@ -148,10 +153,10 @@ public class FileCleanupTaskTests_tempDir {
                 "incorrect number of files after clean up");
 
         assertTrue(filesNamesAfterDeleting.contains(expected_dbName),
-                "snc_catalogue_initial_in_config.db - deleted");
+                "error: snc_catalogue_initial_in_config.db was deleted but shouldn't");
 
         assertTrue(filesNamesAfterDeleting.contains(expected_lastName),
-                "snc_catalogue_date_2019-04-09_loaded_on_2019-04-20 10.30.45.db - deleted");
+                "snc_catalogue_date_2019-04-09_loaded_on_2019-04-20 10.30.45.db  was deleted but shouldn't");
     }
 }
 

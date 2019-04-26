@@ -26,6 +26,11 @@ import org.dizitart.no2.mapper.NitriteMapper;
 
 import java.io.Serializable;
 
+/*
+ * Creates object holding additional info for the app to use when starting up.
+ * (eg. if a chart catalogue has been already loaded up into the database)
+ */
+
 public class AppDTO implements Serializable, Mappable{
 	private static final long serialVersionUID = -4634514619595007673L;
 	
@@ -34,12 +39,7 @@ public class AppDTO implements Serializable, Mappable{
 	String labelLoadedDate;
 	String labelInputError;
 	String textSearchChart;
-	String textSlot1;
-	String textSlot2;
-	String textSlot3;
-	String textSlot4;
-	String textSlot5;
-	
+
 	@Override
 	public Document write(NitriteMapper mapper) {
 	    Document document = new Document();
@@ -48,12 +48,7 @@ public class AppDTO implements Serializable, Mappable{
 	    document.put("labelLoadedDate", getLabelLoadedDate());
 	    document.put("labelInputError", getLabelInputError());
 	    document.put("textSearchChart", getTextSearchChart());
-	    document.put("textSlot1", getTextSlot1());
-	    document.put("textSlot2", getTextSlot2());
-	    document.put("textSlot3", getTextSlot3());
-	    document.put("textSlot4", getTextSlot4());
-	    document.put("textSlot5", getTextSlot5());
-	     
+
 	    return document;
 	}
 
@@ -65,11 +60,6 @@ public class AppDTO implements Serializable, Mappable{
 	        setLabelLoadedDate((String) document.get("labelLoadedDate"));
 	        setLabelInputError((String) document.get("labelInputError"));
 	        setTextSearchChart((String) document.get("textSearchChart"));
-	        setTextSlot1((String) document.get("textSlot1"));
-	        setTextSlot2((String) document.get("textSlot2"));
-	        setTextSlot3((String) document.get("textSlot3"));
-	        setTextSlot4((String) document.get("textSlot4"));
-	        setTextSlot5((String) document.get("textSlot5"));
 	    }
 	}	
 	
@@ -103,36 +93,7 @@ public class AppDTO implements Serializable, Mappable{
 	public void setTextSearchChart(String textSearchChart) {
 		this.textSearchChart = textSearchChart;
 	}
-	public String getTextSlot1() {
-		return textSlot1;
-	}
-	public void setTextSlot1(String textSlot1) {
-		this.textSlot1 = textSlot1;
-	}
-	public String getTextSlot2() {
-		return textSlot2;
-	}
-	public void setTextSlot2(String textSlot2) {
-		this.textSlot2 = textSlot2;
-	}
-	public String getTextSlot3() {
-		return textSlot3;
-	}
-	public void setTextSlot3(String textSlot3) {
-		this.textSlot3 = textSlot3;
-	}
-	public String getTextSlot4() {
-		return textSlot4;
-	}
-	public void setTextSlot4(String textSlot4) {
-		this.textSlot4 = textSlot4;
-	}
-	public String getTextSlot5() {
-		return textSlot5;
-	}
-	public void setTextSlot5(String textSlot5) {
-		this.textSlot5 = textSlot5;
-	}
+
 	
 	
 	

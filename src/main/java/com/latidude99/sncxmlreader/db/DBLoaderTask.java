@@ -45,7 +45,11 @@ public class DBLoaderTask extends Task<Nitrite> {
 		Nitrite database = loadChartsInDB();
 		return database;
 	}
-	
+
+	/*
+	 * Loads parsed chart catalogue into database. AppDTO serves as a flag
+	 * (when checking a database file) if the catalogue has been loaded.
+	 */
 	private Nitrite loadChartsInDB() {
 		Nitrite database = Nitrite.builder()
 			    .compressed()
@@ -65,22 +69,8 @@ public class DBLoaderTask extends Task<Nitrite> {
 								this.loadedChartsNum++;
 								this.updateProgress(loadedChartsNum, totalChartsNum);
 								this.updateMessage("Loaded:  " + loadedChartsNum + " of " + totalChartsNum + " charts");
-								System.out.println(c.getShortName());
 				});
-		
-/*		
-		for(StandardNavigationChart chart : ukhoCatalogueFile.getProducts().getPaper().getCharts()) {
-			 if (this.isCancelled()) {
-				 this.updateMessage("Loading database stopped, loaded:  " + loadedChartsNum + " of " + totalChartsNum + " charts");
-	             break;
-			 }
-			chartRepository.insert(chart);
-			loadedChartsNum++;
-			this.updateProgress(loadedChartsNum, totalChartsNum);
-			this.updateMessage("Loaded:  " + loadedChartsNum + " of " + totalChartsNum + " charts");
-			System.out.println(chart.getShortName());
-		}
-*/
+
 		metaRepository.insert(ukhoCatalogueFile.getBaseFileMetadata());
 		AppDTO appDTO = new AppDTO();
 		appDTO.setSchemaVersion(ukhoCatalogueFile.getSchemaVersion());

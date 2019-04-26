@@ -23,6 +23,11 @@ package com.latidude99.sncxmlreader.utils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
+/*
+ * Used for saving search results as text. Operates on
+ * what is visible in the textSearchResult area.
+ */
+
 public class SearchResultUtils {
 
     public static String readFromFile(File file){

@@ -27,11 +27,15 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.net.URL;
 
+/*
+ * Identifies and extracts download link by HTML element id.
+ */
+
 public class URLParser {
 	
 	public static String getUrlByIdJSOUP(String downloadLinkBase, String downloadPageString) {
 		String url = "";
-		Element link = null;
+		Element link;
 		try {
 			URL downloadPageUrl = new URL(downloadPageString);
 			Document doc = Jsoup.parse(downloadPageUrl, 5000);

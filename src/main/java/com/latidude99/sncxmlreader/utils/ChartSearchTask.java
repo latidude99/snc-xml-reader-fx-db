@@ -25,6 +25,7 @@ import com.latidude99.sncxmlreader.db.Database;
 import com.latidude99.sncxmlreader.map.ChartProximityCalculator;
 import com.latidude99.sncxmlreader.model.StandardNavigationChart;
 import javafx.concurrent.Task;
+import org.apache.log4j.Logger;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ChartSearchTask extends Task<String> {
+	private static final org.apache.log4j.Logger log = Logger.getLogger(ChartSearchTask.class);
 	private static final String SINGLE = "=";
 	private static final String SMALLER_SCALE = "-";
 	private static final String LARGER_SCALE ="+";
@@ -64,19 +66,19 @@ public class ChartSearchTask extends Task<String> {
 
 
     @Override
-    protected String call() throws Exception {
+    protected String call() {
     	System.out.println("ChartSearchTask started");
     	return displayChartRange(input, fullInfo);
     }
 
     @Override
     protected void failed() {
-    	
+		log.error("Chart search task failed");
     }
 
     @Override
     protected void succeeded() {
-       
+       log.info("Chart search task finished successfully");
     }
     
     public String displayChartRange(String input, boolean fullInfo) {
@@ -99,12 +101,13 @@ public class ChartSearchTask extends Task<String> {
         }
         return sb.toString();
 	}
-	
-	
-	
+
+	/*
+	 * Thread put to sleep during the search to visualize progress,
+	 * otherwise too quick to notice when small number of charts
+	 * is being searched for (which is the usual usage scenario).
+	 */
 	public Map<String, StandardNavigationChart> findChartsFromRepository(Set<String> numbersSearched, String searchType){
-//		System.out.println(database.toString());
-//		chartRepository = database.getRepository(StandardNavigationChart.class);
 		ChartProximityCalculator chartProximityCalculator = new ChartProximityCalculator();
 		Map<String, StandardNavigationChart> chartsFound = new LinkedHashMap<>();
 		Map<String, StandardNavigationChart> chartsProximal = new LinkedHashMap<>();
@@ -116,8 +119,6 @@ public class ChartSearchTask extends Task<String> {
 			searchedNum = numbersSearched.size();
 			this.updateProgress(count, searchedNum);
         	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
-//        	System.out.println("chart: " + chart);
-        	System.out.println("count: " + count + ", total to search: " + searchedNum);
         	try {
         	    Thread.sleep(1);                
         	} catch(InterruptedException ex) {
@@ -129,6 +130,10 @@ public class ChartSearchTask extends Task<String> {
         	}	
         }
 
+		// If more than one chart is found (implies that more than one chart was searched for)
+		// then no proximity calculations are conducted. That is due to the fact that if
+		// a user looks for multiple charts then they are not interested in other charts
+		// but exactly the numbers they searched for. This approach may be altered in the future.
 		ChartMap.found = chartsFound;
 		if(chartsFound.size() > 1) {
 			ChartMap.display = chartsFound;
@@ -154,45 +159,7 @@ public class ChartSearchTask extends Task<String> {
 
 }
 				
-/*		
- 		// the fastest
- 		numbersSearched.parallelStream()
-				.forEach(searchNum -> {
-					StandardNavigationChart chart = null;
-		        	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
-		        	count++;
-		        	searchedNum = numbersSearched.size();
-		        	this.updateProgress(count, searchedNum);
-		        	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
-		        	System.out.println("chart: " + chart);
-		        	System.out.println("count: " + count + ", total searched: " + searchedNum);
-		        	if(chart != null)
-		        		chartsFound.put(searchNum, chart);	
-		        
-				});
-		
-		// the slowest
-		numbersSearched.parallelStream()
-				 .filter(c -> 
-				 	chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault() != null)
-				 .collect(
-						 Collectors.toMap(c -> c, c -> chartRepository.find(ObjectFilters.eq("shortName", c)).firstOrDefault()));
-						 
-		// slower
-        for(String searchNum : numbersSearched) {
-        	StandardNavigationChart chart = null;
-        	chart = chartRepository.find(ObjectFilters.eq("shortName", searchNum)).firstOrDefault();
-        	count++;
-        	searchedNum = numbersSearched.size();
-        	this.updateProgress(count, searchedNum);
-        	this.updateMessage("Searched " + count + " charts, found " + chartsFound.size() + " charts");
-        	System.out.println("chart: " + chart);
-        	System.out.println("count: " + count + ", total searched: " + searchedNum);
-        	if(chart != null)
-        		chartsFound.put(searchNum, chart);	
-        }
-        
-*/      
+
     
 	
    
