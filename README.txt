@@ -1,14 +1,3 @@
-***********************************************************************
-***********************************************************************
-*** There is no installation process, after unpacking all the files ***
-*** from the zip/rar archive to the same folder just run .exe file. ***
-*** I hope you find it useful. ****************************************
-***********************************************************************
-***********************************************************************
-
-
-
-
 Copyright (C) 2019  Piotr Czapik
 @author Piotr Czapik
 @version 1.6 
@@ -33,3 +22,5 @@ Libraries used:
         		
         		Nitrite 3.1.0
        			available at https://github.com/dizitart/nitrite-database under Apache 2.0 license
+
+       			Jcoord v.1.1 (C) 2006 Jonathan Stott

@@ -64,7 +64,8 @@ public class Info {
 				" replacing\n" +
 				"\t\tthe original API key manually in config.properties file.\n" +
 				"\t\t\n" +
-				"\t\tThe same restriction applies to generated HTML files, they will not work if copied and opened on \n" +
+				"\t\tThe same restriction applies to all generated HTML files, they will not work if copied and " +
+				"opened on \n" +
 				"\t\tcomputers connected to a different network.\n" +
 				"\t\t\n" +
 				"\t\tNOTE\n" +
@@ -118,7 +119,8 @@ public class Info {
 				"\n" +
 				"\t\tthe map are the same as in the search result. That means to display any chart you need to " +
 				"search for it first.\n" +
-				"\t\tIf you try to display too many charts (more than 100) the map might not be a bit less responsive \n" +
+				"\t\tIf you try to display too many charts (more than 100) the map might be a bit less " +
+				"responsive \n" +
 				"\t\ton older computers.\n" +
 				"\t\tEvery time you try to display charts an HTML file is generated and saved in /user.data/html/... folder.\n" +
 				"\t\tThe file's name contains of all the charts numbers that have been found during your last search. \n" +
