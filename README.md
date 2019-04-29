@@ -49,7 +49,7 @@ The United Kingdom Hydrographic Office issues a digital catalogue for their Stan
 ### Prerequisities
 - Java JRE or JDK 1.8.0 or later
 ### Setup
-There is no installation per se. To start using the app:
+To start using the app:
 - download *SncXmlReaderFXDB-X.X.X.X-release.zip* file (where *X.X.X.X* is the current version number) from the [release/] folder to your computer and unpack it. The unpacked folder  *SncXmlReaderFXDB-X.X.X.X* will consist of **SncXmlReader_2.3.0.0.exe** and **SncXmlReaderFXDB-2.3.0.0-shaded.jar** files as well as **user.data** folder.
 - you can start the app double clicking on the **.exe** file or run it from the command line passing additional parameters to JVM.
 - **user.data** folder content:
@@ -92,6 +92,7 @@ And that is it! Now you can search for charts and see their coverage displayed o
 - If you have been issued with a specific Google Maps Javasript API KEY this key is restricted in use to the IP's of the computer's domain (domain the SncXmlReaderFXDB application is installed on) and will not work on computers connected to a different network. If you want to use this funcionality (displaying charts) on computers connected to a different network you need to provide your own Google Maps Javascript API key. You can supply your own API key by replacing the original API key manually in *config.properties* file. The same restriction applies to all automatically generated HTML files, they will not work if copied and opened on computers connected to a different network.
 
 **Note**
+
 An HTML file will still be generated but it will not work until the API key is not replaced (in the file itself) with a valid one.
 - If you are using Google Maps Javasript API KEY provided in this repository
 there is no IP restrictions. There is, however, a restriction on monthly usage and the limit depends on my financial situation
@@ -102,11 +103,13 @@ there is no IP restrictions. There is, however, a restriction on monthly usage a
 If you have never used any of Google Maps official APIs you can register with Google as a developer and have the first year of using their APIs free of charge (with some minor limitations).
 
 # Status
-In progress. 
+In progress
+
 Stage:
--- bug fixing and minor improvements especially to the search algorithm
-Future:
--- pssibility of adding NGA and NOAA charts if data source found
+- bug fixing and minor improvements especially to the search algorithm
+
+Planned:
+- pssibility of adding NGA and NOAA charts if data source found
 
 # License
 SncXmlReaderFXDB is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
