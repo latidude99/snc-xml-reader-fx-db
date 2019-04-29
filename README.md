@@ -9,6 +9,7 @@ A UKHO Standard Navigation Chart reader with an option to display charts' covera
 * [General Info](#general-info)
 * [Screenshots](#screenshots)
 * [Technologies](#technologies)
+* [Setup](#setup)
 * [Launch](#launch)
 * [Features](#features)
 * [Restrictions](#restrictions)
