@@ -20,6 +20,7 @@
 
 package com.latidude99.sncxmlreader.utils;
 
+import com.latidude99.sncxmlreader.app.Log;
 import javafx.concurrent.Task;
 import org.apache.log4j.Logger;
 
@@ -37,12 +38,14 @@ import java.util.Map;
  * and loading up database with objects from parsed xml file.
  * Leaves only the latest and the file with the name passed as parameter.
  */
+
 public class FileCleanupTask extends Task<Void> {
     private static final org.apache.log4j.Logger log = Logger.getLogger(FileCleanupTask.class);
     private String dbName;
     int count;
 
     public FileCleanupTask(String dbPath){
+        Log.log4jConfig();
         if(dbPath != null && dbPath.contains("/")){
             int startIndex = dbPath.lastIndexOf('/') + 1;
             dbName = dbPath.substring(startIndex);
@@ -56,7 +59,7 @@ public class FileCleanupTask extends Task<Void> {
         try{
             deleteFiles(ConfigPaths.USER_DB_FOLDER.getPath(), dbName);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return null;
     }

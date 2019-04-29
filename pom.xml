@@ -263,6 +263,8 @@
 		    <groupId>uk.me.jstott</groupId>
 		    <artifactId>jcoord</artifactId>
 		    <version>1.0</version>
+            <scope>system</scope >
+            <systemPath>${project.basedir}/lib/jcoord-1.0.jar</systemPath>
 		</dependency>
 
 
