@@ -17,7 +17,6 @@ The United Kingdom Hydrographic Office issues a digital catalogue for their Stan
 
 # Screenshots
 <img src="images/main_window_search1.PNG" width=100%>
-<img src="images/web_window_update1.PNG" width=100%>
 <img src="images/load_xml_from_file.PNG" width=100%>
 <img src="images/map_window_chart_1.PNG" width=100%>
 <img src="images/map_window_chart_2.PNG" width=100%>
