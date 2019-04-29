@@ -1,5 +1,8 @@
 # SncXmlReaderFXDB
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+
 A UKHO Standard Navigation Chart reader with an option to display charts' coverage.
 ## Table of contents
 * [General Info](#general-info)
