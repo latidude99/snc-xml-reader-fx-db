@@ -13,20 +13,21 @@ A UKHO Standard Navigation Chart reader with an option to display charts' covera
 * [Contact](#contact)
 
 # General Info
-The United Kingdom Hydrographic Office issues a digital catalogue for their Standard Paper Charts in XML format. Suffice to say it is not very user friendly to use. Hence the idea to make it a bit simpler to search for info about charts by building a simple Graphic User Interface where information would be diplayed in a succint and easy on the eyes form. Later, on top of the above a feature allowing display charts coverage as polygons on Google Maps backgroud was added.
+The United Kingdom Hydrographic Office issues a digital catalogue for their Standard Paper Charts in XML format. It is not very user friendly to use. Hence the idea to make it a bit simpler to search for info about charts by building a simple Graphic User Interface where information would be diplayed in a succint and easy on the eyes form. Later, on top of the above a feature allowing display charts coverage as polygons on Google Maps backgroud was added.
 
 # Screenshots
 <img src="images/main_window_search1.PNG" width="800">
 <img src="images/load_xml_from_file.PNG" width="800">
 <img src="images/map_window_chart_1.PNG" width="800">
 <img src="images/map_window_chart_2.PNG" width="800">
+
 # Technologies
 - Java JDK 1.8
 - JavaFX 2.0
 - Maven 3.60
 - started on Eclipse, later switched to IntelliJ IDEA. 
 
-**Plugins and libraries:**
+**Plugins and libraries**
 - Maven Compiler plugin 3.8.0
 - Maven Site plugin version 3.6
 - Maven Antrun plugin version 1.8
@@ -89,6 +90,7 @@ And that is it! Now you can search for charts and see their coverage displayed o
 
 # Restrictions
 - If you have been issued with a specific Google Maps Javasript API KEY this key is restricted in use to the IP's of the computer's domain (domain the SncXmlReaderFXDB application is installed on) and will not work on computers connected to a different network. If you want to use this funcionality (displaying charts) on computers connected to a different network you need to provide your own Google Maps Javascript API key. You can supply your own API key by replacing the original API key manually in *config.properties* file. The same restriction applies to all automatically generated HTML files, they will not work if copied and opened on computers connected to a different network.
+
 **Note**
 An HTML file will still be generated but it will not work until the API key is not replaced (in the file itself) with a valid one.
 - If you are using Google Maps Javasript API KEY provided in this repository
@@ -98,9 +100,10 @@ there is no IP restrictions. There is, however, a restriction on monthly usage a
 <img src="images/map_window_error.PNG" width="800">
 
 If you have never used any of Google Maps official APIs you can register with Google as a developer and have the first year of using their APIs free of charge (with some minor limitations).
+
 # Status
 In progress. 
-Stage: 
+Stage:
 -- bug fixing and minor improvements especially to the search algorithm
 Future:
 -- pssibility of adding NGA and NOAA charts if data source found
@@ -109,6 +112,7 @@ Future:
 SncXmlReaderFXDB is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 SncXmlReaderFXDB is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with SncXmlReaderFXDB.  If not, see http://www.gnu.org/licenses/ or write to: latidude99@gmail.com
+
 # Contact
 You can email me at latidude99@gmail.com
 
