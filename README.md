@@ -29,6 +29,7 @@ The United Kingdom Hydrographic Office issues a digital catalogue for their Stan
 - Java JDK 1.8
 - JavaFX 2.0
 - Maven 3.60
+- Scene Builder
 - started on Eclipse, later switched to IntelliJ IDEA. 
 
 **Plugins and libraries**
@@ -48,6 +49,14 @@ The United Kingdom Hydrographic Office issues a digital catalogue for their Stan
 - JSoup library 1.11.3
 - JCoord library 1.0
 - Google Maps Javascript API version 3
+
+# Setup
+
+Clone the repository to a folder on your computer and import it in your favourite IDE as a Maven project.
+
+### Build
+
+Run - *mvn clean package* - it creates an executable .jar (with all the dependencies included) as well as a Windows .exe wrapper of the same .jar. Also, necessary folder/file structure is copied next to the executable files (*user.data* folder and its content). All of it is then packed in a ZIP file format for portability as a release version.
 
 # Launch
 ### Prerequisities
