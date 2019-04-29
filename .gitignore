@@ -13,6 +13,7 @@ old/
 *.class
 .mtj.tmp/
 *.jar
+!lib/jcoord-1.0.jar #exception for TravisCI
 *.war
 *.ear
 hs_err_pid*
