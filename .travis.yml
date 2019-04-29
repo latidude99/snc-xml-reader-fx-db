@@ -1,4 +1,2 @@
 language: java
-before_install:
-  - mkdir lib/
-  - wget -P "lib/" http://akmasoft.com/nexus/content/repositories/releases/uk/me/jstott/jcoord/1.0/jcoord-1.0.jar
+before_start: wget -P "lib/" http://akmasoft.com/nexus/content/repositories/releases/uk/me/jstott/jcoord/1.0/jcoord-1.0.jar
