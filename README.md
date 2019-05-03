@@ -95,7 +95,7 @@ And that is it! Now you can search for charts and see their coverage displayed o
     - a single chart number followed by '=' (equals) eg. '23='
 	 - a few chart numbers separated with ',' (comma) eg. '23, 25 ,27'
 	 - a range of charts separated with '-' (hyphen) eg. '67-45'
-	 - any combimation of the above eg. 23,45,67,254-256,nz67-45, aus12-aus34' (spaces between digits will be removed during processing, numbers joined and treated as one chart number)
+	 - any combination of the above eg. 23,45,67,254-256,nz67-45, aus12-aus34' (spaces between digits will be removed during processing, numbers joined and treated as one chart number)
 - to broaden your search enter:
     - a single number not followed by '=' eg. '23' - finds all the charts that overlap or border with the searched one
     - a single number followed by '+' (plus) eg. '23+' - finds all the charts that:
@@ -110,7 +110,7 @@ And that is it! Now you can search for charts and see their coverage displayed o
 - charts polygon colours are drawn from a small pool of colours to improve legibility. 
 - when you click inside a chart polygon a tooltip containing basic information about the chart will appear. Info includes chart's number, name, whether it is a main chart panel or one of its insets (additional panels) along with the scale aof the panel.
 - every time you try to display charts an HTML file is generated and saved in */user.data/html/...* folder. The file's name contains of all the charts numbers that have been found during your last search. If the length of the name exceedes 240 characters the range of chart numbers (the first and the last one) is used for the name.
-- the generated HTML files are full, stand alone HTML pages with a Javascript script and Google Maps Javasript API KEY included. You can open those files in any major internet browser; however, IE and Edge have been tested.
+- the generated HTML files are full, stand alone HTML pages with a Javascript script and Google Maps Javasript API KEY included. You can open those files in any major internet browser; however, IE and Edge have not been tested.
 - you can keep as many Map Windows opened as you like, you do not have to close a map window to conduct and display another search.
 
 # Restrictions
