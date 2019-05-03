@@ -1,9 +1,11 @@
 # SncXmlReaderFXDB
 
-[![](https://img.shields.io/badge/version-2.3-yellow.svg)](https://github.com/latidude99/snc-xml-reader-fx-db/tree/master/release)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![](https://img.shields.io/badge/release-2.3-blue.svg)](https://github.com/latidude99/snc-xml-reader-fx-db/tree/master/release)
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.com/latidude99/snc-xml-reader-fx-db.svg?branch=master)](https://travis-ci.com/latidude99/snc-xml-reader-fx-db)
-[![](https://img.shields.io/badge/%20$%20-Buy%20me%20a%20coffe-yellow.svg)](https://www.buymeacoffee.com/zWn1I6bVf)
+[![GitHub issues](https://img.shields.io/github/issues/Naereen/StrapDown.js.svg)](https://GitHub.com/latidude99/snc-xml-reader-fx-db/issues/)
+[![Maintenance](https://img.shields.io/badge/maintained-yes-green.svg)](https://GitHub.com/latidude99/snc-xml-reader-fx-db/graphs/commit-activity)
+[![](https://img.shields.io/badge/%20$%20-buy%20me%20a%20coffe-yellow.svg)](https://www.buymeacoffee.com/zWn1I6bVf)
 
 
 
@@ -64,6 +66,9 @@ Clone the repository to a folder on your computer and import it in your favourit
 ### Build
 
 Run - *mvn clean package* - it creates an executable .jar (with all the dependencies included) as well as a Windows .exe wrapper of the same .jar. Also, necessary folder/file structure is copied next to the executable files (*user.data* folder and its content). All of it is then packed in a ZIP file format for portability as a release version.
+
+***Build process error*** *when trying to build with TravisCI (as shown on the badge). Travis CI can't find JCoord 
+library in Maven Central despite it being there. Local Maven build process passes OK.*
 
 # Launch
 ### Prerequisities
