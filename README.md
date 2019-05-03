@@ -23,10 +23,13 @@ A UKHO Standard Navigation Chart reader with an option to display charts' covera
 The United Kingdom Hydrographic Office issues a digital catalogue for their Standard Paper Charts in XML format. It is not very user friendly to use. Hence the idea to make it a bit simpler to search for info about charts by building a simple Graphic User Interface where information would be diplayed in a succint and easy on the eyes form. Later, on top of the above a feature allowing display charts coverage as polygons on Google Maps backgroud was added.
 
 # Screenshots
-<img src="images/main_window_search1.PNG" width=100%>
-<img src="images/load_xml_from_file.PNG" width=100%>
-<img src="images/map_window_chart_1.PNG" width=100%>
-<img src="images/map_window_chart_2.PNG" width=100%>
+<p align="center">
+	<img src="images/main_window_search1.PNG" width=70%>
+	<img src="images/load_xml_from_file.PNG" width=70%>
+	<img src="images/map_window_chart_1.PNG" width=70%>
+	<img src="images/map_window_chart_2.PNG" width=70%>
+</p>
+
 
 # Technologies
 - Java JDK 1.8
@@ -114,8 +117,9 @@ An HTML file will still be generated but it will not work until the API key is n
 there is no IP restrictions. There is, however, a restriction on monthly usage and the limit depends on my financial situation
 
 - You will know if you hit any of the above restrictions when you see this screen in the map window trying to display charts coverage:
-<img src="images/map_window_error.PNG" width="800">
-
+<p align="center">
+<img src="images/map_window_error.PNG" width="70%">
+</p>
 If you have never used any of Google Maps official APIs you can register with Google as a developer and have the first year of using their APIs free of charge (with some minor limitations).
 
 # Status
