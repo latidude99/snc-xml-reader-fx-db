@@ -3,7 +3,7 @@
 [![](https://img.shields.io/badge/release-2.3-blue.svg)](https://github.com/latidude99/snc-xml-reader-fx-db/tree/master/release)
 [![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.com/latidude99/snc-xml-reader-fx-db.svg?branch=master)](https://travis-ci.com/latidude99/snc-xml-reader-fx-db)
-[![GitHub issues](https://img.shields.io/github/issues/Naereen/StrapDown.js.svg)](https://GitHub.com/latidude99/snc-xml-reader-fx-db/issues/)
+[![GitHub issues](https://img.shields.io/badge/issues-open%201-greenred.svg)](https://GitHub.com/latidude99/snc-xml-reader-fx-db/issues/)
 [![Maintenance](https://img.shields.io/badge/maintained-yes-green.svg)](https://GitHub.com/latidude99/snc-xml-reader-fx-db/graphs/commit-activity)
 [![](https://img.shields.io/badge/%20$%20-buy%20me%20a%20coffe-yellow.svg)](https://www.buymeacoffee.com/zWn1I6bVf)
 
