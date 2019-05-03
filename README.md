@@ -2,6 +2,8 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.com/latidude99/snc-xml-reader-fx-db.svg?branch=master)](https://travis-ci.com/latidude99/snc-xml-reader-fx-db)
+[![](https://img.shields.io/badge/%20$%20-Buy%20me%20a%20coffe-yellow.svg)](https://www.buymeacoffee.com/zWn1I6bVf)
+
 
 
 A UKHO Standard Navigation Chart reader with an option to display charts' coverage.
@@ -31,7 +33,7 @@ The United Kingdom Hydrographic Office issues a digital catalogue for their Stan
 - JavaFX 2.0
 - Maven 3.60
 - Scene Builder
-- started on Eclipse, later switched to IntelliJ IDEA. 
+- started on Eclipse, then switched to IntelliJ IDEA. 
 
 **Plugins and libraries**
 - Maven Compiler plugin 3.8.0
