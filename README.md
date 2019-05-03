@@ -1,7 +1,11 @@
 # SncXmlReaderFXDB
 
+[![](https://img.shields.io/badge/version-2.3-yellow.svg)](https://github.com/latidude99/snc-xml-reader-fx-db/tree/master/release)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.com/latidude99/snc-xml-reader-fx-db.svg?branch=master)](https://travis-ci.com/latidude99/snc-xml-reader-fx-db)
+
+
+
 [![](https://img.shields.io/badge/%20$%20-Buy%20me%20a%20coffe-yellow.svg)](https://www.buymeacoffee.com/zWn1I6bVf)
 
 
