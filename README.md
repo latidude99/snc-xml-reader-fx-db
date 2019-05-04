@@ -36,7 +36,7 @@ The United Kingdom Hydrographic Office issues a digital catalogue for their Stan
 
 # Technologies
 - Java JDK 1.8
-- JavaFX 2.0
+- JavaFX 8
 - Maven 3.60
 - Scene Builder
 - started on Eclipse, then switched to IntelliJ IDEA. 
@@ -72,7 +72,7 @@ library in Maven Central despite it being there. Local Maven build process passe
 
 # Launch
 ### Prerequisities
-- Java JRE or JDK 1.8.0 or later
+- Java 1.8.0 or later
 ### Setup
 To start using the app:
 - download *SncXmlReaderFXDB-X.X.X.X-release.zip* file (where *X.X.X.X* is the current version number) from the [release/] folder to your computer and unpack it. The unpacked folder  *SncXmlReaderFXDB-X.X.X.X* will consist of **SncXmlReader_2.3.0.0.exe** and **SncXmlReaderFXDB-2.3.0.0-shaded.jar** files as well as **user.data** folder.
