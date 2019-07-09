@@ -129,7 +129,6 @@ there is no IP restrictions. There is, however, a restriction on monthly usage a
 If you have never used any of Google Maps official APIs you can register with Google as a developer and have the first year of using their APIs free of charge (with some minor limitations).
 
 # Status
-In progress
 
 Stage:
 - bug fixing and minor improvements especially to the search algorithm
